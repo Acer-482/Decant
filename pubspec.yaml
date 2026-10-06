@@ -1,6 +1,6 @@
 name: media_transcoder
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0+1
 
 environment:
@@ -10,10 +10,27 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 状态管理
+  provider: ^6.1.5+1 # Provider
+  flutter_riverpod: ^3.4.3 # Riverpod
+  riverpod_annotation: ^4.0.7 # Riverpod 注解
+
+  # 序列化代码生成 #
+  freezed_annotation: ^3.1.0 # freezed注解
+  dart_mappable: ^4.7.0 # 映射生成包
+
+  # FFmpeg
+  ffmpeg_kit_flutter_new: ^4.6.7 # FFmpeg全量包
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+  # 序列化代码生成
+  freezed: ^4.0.2 # freezed
+  riverpod_generator: ^4.0.3 # Riverpod
+  dart_mappable_builder: ^4.7.0 # 映射生成
 
 flutter:
   uses-material-design: true
