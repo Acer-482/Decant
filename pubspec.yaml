@@ -10,17 +10,20 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 文件选择
+  file_picker: ^13.1.0 # 文件选择
+
   # 状态管理
   provider: ^6.1.5+1 # Provider
   flutter_riverpod: ^3.4.3 # Riverpod
   riverpod_annotation: ^4.0.7 # Riverpod 注解
 
   # 序列化代码生成 #
-  freezed_annotation: ^3.1.0 # freezed注解
+  freezed_annotation: ^3.1.0 # Freezed 注解
   dart_mappable: ^4.7.0 # 映射生成包
 
   # FFmpeg
-  ffmpeg_kit_flutter_new: ^4.6.7 # FFmpeg全量包
+  ffmpeg_kit_flutter_new: ^4.6.7 # FFmpeg 全量包
 
 dev_dependencies:
   flutter_test:
