@@ -18,7 +18,7 @@ dependencies:
   flutter_riverpod: ^3.4.3 # Riverpod
   riverpod_annotation: ^4.0.7 # Riverpod 注解
 
-  # 序列化代码生成 #
+  # 序列化代码生成
   freezed_annotation: ^3.1.0 # Freezed 注解
   dart_mappable: ^4.7.0 # 映射生成包
 
