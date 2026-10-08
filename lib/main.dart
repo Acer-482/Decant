@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/ffmpeg_test_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_transcoder/features/task/pages/task_list_page.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const ProviderScope(child: MainApp()));
 }
 
 /// APP 入口
@@ -11,6 +12,14 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: Center(child: FFmpegTestPage()));
+    return MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.cyan, // 主题色
+          brightness: Brightness.dark, // 深色模式
+        ),
+      ),
+      home: const Center(child: TaskListPage()),
+    );
   }
 }
