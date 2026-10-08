@@ -1,8 +1,13 @@
 import 'dart:convert';
 
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:media_transcoder/core/enums/encoder/video_encoder.dart';
+import 'package:media_transcoder/core/enums/encoder_platform.dart';
+import 'package:media_transcoder/core/enums/encoder_type.dart';
+import 'package:media_transcoder/core/models/available_encoder.dart';
 
 /// 测试页面
 class FFmpegTestPage extends StatefulWidget {
@@ -15,6 +20,7 @@ class FFmpegTestPage extends StatefulWidget {
 class FFmpegTestPageState extends State<FFmpegTestPage> {
   final List<String> log = []; // 输出日志
   PlatformFile? pickedFile; // 选择文件
+  VideoEncoder? videoEncoder; // 编码器类型
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +34,29 @@ class FFmpegTestPageState extends State<FFmpegTestPage> {
               spacing: 20,
               children: [
                 ElevatedButton(
+                  onPressed: _getAvalibleDecoder,
+                  child: Text('获取可用编解码器'),
+                ),
+                ElevatedButton(
                   onPressed: _pickFile,
                   child: Text(
                     '选择文件${pickedFile == null ? '' : ' (${pickedFile?.path})'}',
                   ),
                 ),
                 ElevatedButton(onPressed: _getInfo, child: Text('获取文件信息')),
+                Row(
+                  mainAxisSize: .min,
+                  children: [
+                    Text('媒体编码器：'),
+                    DropdownButton<VideoEncoder>(
+                      value: videoEncoder,
+                      borderRadius: .all(.circular(10)),
+                      items: _buildDropdownItem(),
+                      onChanged: (value) =>
+                          setState(() => videoEncoder = value),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -41,6 +64,30 @@ class FFmpegTestPageState extends State<FFmpegTestPage> {
       ),
     );
   }
+
+  // 获取可用编解码器
+  void _getAvalibleDecoder() async {
+    final data = await FFmpegKit.execute('-encoders');
+    final output = await data.getOutput() ?? '';
+    debugPrint('原始输出：$output');
+    _showInfoDialog(output);
+
+    final encoderData = parseEncoders(output);
+    debugPrint(
+      'Json数据: ${encoderData.map((e) => '(name: ${e.name}, desc: ${e.description}, type: ${e.type})').join(', ')}',
+    );
+  }
+
+  // 构建下拉菜单内容
+  List<DropdownMenuItem<VideoEncoder>> _buildDropdownItem() =>
+      VideoEncoder.values.map((e) {
+        String text = '[${e.codec.displayName}] ${e.type.displayName}'; // 编码器类型
+        // 硬件编码器 //
+        if (e.type == .hardware) {
+          text += ' (${e.platforms.map((e) => e.displayName).join('、')})';
+        }
+        return DropdownMenuItem(value: e, child: Text(text)); // 构建下拉菜单
+      }).toList();
 
   // 选择文件
   void _pickFile() async {
@@ -67,21 +114,21 @@ class FFmpegTestPageState extends State<FFmpegTestPage> {
       return;
     }
     // 显示信息 //
-    mediaInfo.getStreams()[0].getCodec();
     final infoJson = JsonEncoder.withIndent('\t')
         .convert(mediaInfo.getAllProperties());
     debugPrint('媒体信息: \n$infoJson');
-    final context = this.context;
-    if (context.mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          content: SingleChildScrollView(
-            child: Text(infoJson, textAlign: TextAlign.start),
-          ),
-        ),
-      );
-    }
+    _showInfoDialog(infoJson);
     setState(() {}); // 更新状态
+  }
+
+  Future<void> _showInfoDialog(String text) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Text(text, textAlign: TextAlign.start),
+        ),
+      ),
+    );
   }
 }
