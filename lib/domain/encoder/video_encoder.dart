@@ -1,7 +1,7 @@
-import 'package:media_transcoder/core/enums/encoder/media_encoder.dart';
-import 'package:media_transcoder/core/enums/encoder/encoder_platform.dart';
-import 'package:media_transcoder/core/enums/encoder/encoder_type.dart';
-import 'package:media_transcoder/core/enums/codec/video_codec.dart';
+import 'package:media_transcoder/domain/encoder/media_encoder.dart';
+import 'package:media_transcoder/domain/encoder/encoder_platform.dart';
+import 'package:media_transcoder/domain/encoder/encoder_type.dart';
+import 'package:media_transcoder/domain/codec/video_codec.dart';
 
 /// 媒体解码器
 enum VideoEncoder implements MediaEncoder {

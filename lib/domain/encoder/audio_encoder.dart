@@ -1,6 +1,6 @@
-import 'package:media_transcoder/core/enums/codec/audio_codec.dart';
-import 'package:media_transcoder/core/enums/encoder/media_encoder.dart';
-import 'package:media_transcoder/core/enums/encoder/encoder_flavor.dart';
+import 'package:media_transcoder/domain/codec/audio_codec.dart';
+import 'package:media_transcoder/domain/encoder/media_encoder.dart';
+import 'package:media_transcoder/domain/encoder/encoder_flavor.dart';
 
 /// 音频编码器
 enum AudioEncoder implements MediaEncoder {

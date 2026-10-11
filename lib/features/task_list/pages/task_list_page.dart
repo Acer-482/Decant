@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/task/enums/task_state.dart';
-import 'package:media_transcoder/features/task/models/task_list_notifier.dart';
+import 'package:media_transcoder/domain/task/task_state.dart';
+import 'package:media_transcoder/features/task_list/providers/task_list_notifier.dart';
 
 /// 任务列表页面
 class TaskListPage extends ConsumerWidget {

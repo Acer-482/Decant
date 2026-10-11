@@ -1,5 +1,5 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/features/task/models/media_source/media_source.dart';
+import 'package:media_transcoder/domain/media/media_source/media_source.dart';
 
 part 'local_media_file_source.mapper.dart';
 

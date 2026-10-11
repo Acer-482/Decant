@@ -1,5 +1,5 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/features/task/enums/task_state.dart';
+import 'package:media_transcoder/domain/task/task_state.dart';
 
 part 'base_task.mapper.dart';
 

@@ -1,6 +1,6 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/features/task/enums/task_state.dart';
-import 'package:media_transcoder/features/task/models/task/base_task.dart';
+import 'package:media_transcoder/domain/task/task_state.dart';
+import 'package:media_transcoder/domain/task/base_task.dart';
 
 part 'media_transcode_task.mapper.dart';
 

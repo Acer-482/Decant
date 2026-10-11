@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/task/pages/task_list_page.dart';
+import 'package:media_transcoder/features/task_list/pages/task_list_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MainApp()));
