@@ -11,7 +11,6 @@ class TaskListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(taskListProvider.notifier);
     return Scaffold(
-      appBar: AppBar(title: Text('任务列表')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addTask(notifier),
         icon: Icon(Icons.add),
