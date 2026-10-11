@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/task_list/pages/task_list_page.dart';
+import 'package:media_transcoder/features/home/pages/home_pages.dart';
 
 void main() {
   runApp(const ProviderScope(child: MainApp()));
@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
           brightness: Brightness.dark, // 深色模式
         ),
       ),
-      home: const Center(child: TaskListPage()),
+      home: const HomePage(),
     );
   }
 }
