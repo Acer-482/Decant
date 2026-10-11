@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
   /// 页面切换时会调用[_onPageChanged]
   void _animatedToPage(int newIndex) {
     _pageController.animateToPage(
-      _pageIndex,
+      newIndex,
       duration: Duration(milliseconds: 300),
       curve: Curves.fastEaseInToSlowEaseOut,
     );
@@ -91,8 +91,7 @@ class _HomePageState extends State<HomePage> {
   ///
   /// 用于在[PageView]滑动更新页面时更新索引和UI
   void _onPageChanged(int newIndex) {
-    setState(() {
-      _pageIndex = newIndex;
-    });
+    _pageIndex = newIndex;
+    setState(() {});
   }
 }
