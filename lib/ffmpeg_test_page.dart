@@ -5,8 +5,8 @@ import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:media_transcoder/core/enums/encoder/video_encoder.dart';
-import 'package:media_transcoder/core/enums/encoder_platform.dart';
-import 'package:media_transcoder/core/enums/encoder_type.dart';
+import 'package:media_transcoder/core/enums/encoder/encoder_platform.dart';
+import 'package:media_transcoder/core/enums/encoder/encoder_type.dart';
 import 'package:media_transcoder/core/models/available_encoder.dart';
 
 /// 测试页面
