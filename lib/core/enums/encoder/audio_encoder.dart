@@ -3,7 +3,7 @@ import 'package:media_transcoder/core/enums/encoder/media_encoder.dart';
 import 'package:media_transcoder/core/enums/encoder/encoder_flavor.dart';
 
 /// 音频编码器
-enum AudioEncoder {
+enum AudioEncoder implements MediaEncoder {
   aac(AudioCodec.aac, 'aac', flavor: .native),
   libfdkAac(AudioCodec.aac, 'libfdk_aac', flavor: .fdk),
   libmp3lame(AudioCodec.mp3, 'libmp3lame', flavor: .lame),
@@ -19,7 +19,8 @@ enum AudioEncoder {
   /// 编码格式
   final AudioCodec codec;
 
-  /// ffmpeg内名称
+  /// FFmpeg内编码器名称
+  @override
   final String ffmpegName;
 
   /// 音频变体

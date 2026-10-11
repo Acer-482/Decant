@@ -1,9 +1,10 @@
-import 'package:media_transcoder/core/enums/encoder_platform.dart';
-import 'package:media_transcoder/core/enums/encoder_type.dart';
+import 'package:media_transcoder/core/enums/encoder/media_encoder.dart';
+import 'package:media_transcoder/core/enums/encoder/encoder_platform.dart';
+import 'package:media_transcoder/core/enums/encoder/encoder_type.dart';
 import 'package:media_transcoder/core/enums/codec/video_codec.dart';
 
 /// 媒体解码器
-enum VideoEncoder {
+enum VideoEncoder implements MediaEncoder {
   // H.264 //
   libx264(VideoCodec.h264, 'libx264', type: .software),
   h264Nvenc(
@@ -75,7 +76,8 @@ enum VideoEncoder {
   /// 编码格式
   final VideoCodec codec;
 
-  /// ffmpeg内名称
+  /// FFmpeg内编码器名称
+  @override
   final String ffmpegName;
 
   /// 类型 (软件/硬件)
