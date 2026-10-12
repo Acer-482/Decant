@@ -1,14 +1,22 @@
 import 'package:dart_mappable/dart_mappable.dart';
+import 'package:media_transcoder/domain/media/media_source/media_source.dart';
+import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
 import 'package:media_transcoder/domain/task/task_state.dart';
 import 'package:media_transcoder/domain/task/base_task.dart';
 
 part 'media_transcode_task.mapper.dart';
 
 /// 媒体转码任务
-@MappableClass(discriminatorValue: 'MediaTranscodeTask')
+@MappableClass(discriminatorValue: 'media_transcode')
 class MediaTranscodeTask extends BaseTask with MediaTranscodeTaskMappable {
-  /// 路径
-  final String path;
+  /// 媒体源
+  final MediaSource source;
+
+  /// 流配置
+  final List<StreamConfig> streamConfigs;
+
+  /// 输出路径
+  final String outputPath;
 
   const MediaTranscodeTask({
     required super.id,
@@ -18,6 +26,8 @@ class MediaTranscodeTask extends BaseTask with MediaTranscodeTaskMappable {
     super.finishedStamp,
     required super.createdStamp,
     super.errorMessage,
-    required this.path,
+    required this.source,
+    required this.streamConfigs,
+    required this.outputPath,
   });
 }
