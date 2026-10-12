@@ -10,34 +10,40 @@ class TaskListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(taskListProvider.notifier);
+    final taskList = ref.watch(sortedTaskListProvider); // 任务列表
+    final notifier = ref.read(taskListProvider.notifier); // 任务列表提供器
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addTask(notifier),
         icon: Icon(Icons.add),
         label: Text('新建任务'),
       ),
-      body: Column(
-        crossAxisAlignment: .center,
-        children: [..._buildTaskList(ref)],
+      body: Container(
+        padding: .all(10), // 内边距
+        child: Column(
+          crossAxisAlignment: .center, // 交叉方向中心对齐
+          children: [Expanded(child: _buildTaskList(taskList))],
+        ),
       ),
     );
   }
 
-  /// 构建列表
-  List<Widget> _buildTaskList(WidgetRef ref) {
-    return ref
-        .watch(sortedTaskListProvider)
-        .map(
-          (task) => ListTile(
+  /// 构建任务列表
+  Widget _buildTaskList(List<BaseTask> taskList) {
+    return ListView.builder(
+      itemCount: taskList.length,
+      itemBuilder: (context, index) {
+        final task = taskList[index];
+        return Card(
+          child: ListTile(
             title: Text(task.name),
-            subtitle: Row(
-              mainAxisAlignment: .spaceAround,
-              children: [Text(task.notes), Text(task.state.displayName)],
-            ),
+            subtitle: Text(task.notes),
+            trailing: task.state.displayText,
+            onTap: () {},
           ),
-        )
-        .toList();
+        ); // 列表卡片
+      },
+    );
   }
 
   /// 添加任务
