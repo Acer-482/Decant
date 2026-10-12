@@ -19,4 +19,8 @@ extension TaskStateUi on TaskState {
     .failed => Colors.red,
     .cancelled => Colors.tealAccent,
   };
+
+  /// 带颜色控件
+  Text get displayText =>
+      Text(displayName, style: TextStyle(color: displayColor));
 }
