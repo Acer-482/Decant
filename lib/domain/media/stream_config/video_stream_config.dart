@@ -5,9 +5,8 @@ import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
 part 'video_stream_config.mapper.dart';
 
 /// 媒体流配置
-@MappableClass(discriminatorValue: 'VideoStreamConfig')
-abstract class VideoStreamConfig extends StreamConfig
-    with VideoStreamConfigMappable {
+@MappableClass(discriminatorValue: 'video')
+class VideoStreamConfig extends StreamConfig with VideoStreamConfigMappable {
   /// 编码器
   final VideoEncoder encoder;
 
