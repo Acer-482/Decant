@@ -76,12 +76,18 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
     ]; // 表单控件
     return Scaffold(
       appBar: AppBar(title: Text(formTitle)),
-      body: Form(
-        key: _formKeys,
-        child: ListView.separated(
-          itemCount: formWidgets.length,
-          itemBuilder: (context, index) => formWidgets[index],
-          separatorBuilder: (context, index) => const Divider(), // 分割线
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 500),
+          padding: .all(12),
+          child: Form(
+            key: _formKeys,
+            child: ListView.separated(
+              itemCount: formWidgets.length,
+              itemBuilder: (context, index) => formWidgets[index],
+              separatorBuilder: (context, index) => const Divider(), // 分割线
+            ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -117,19 +123,20 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
             border: OutlineInputBorder(),
           ),
         ), // 备注
-        ListTile(
-          title: Text('状态'),
-          subtitle: Text('该任务的初始状态'),
-          trailing: DropdownButton(
-            items: TaskState.values
-                .map(
-                  (state) =>
-                      DropdownMenuItem(value: state, child: state.displayText),
-                )
-                .toList(),
-            value: taskState,
-            onChanged: (value) => setState(() => taskState = value ?? .pending),
+        DropdownButtonFormField<TaskState>(
+          initialValue: taskState,
+          decoration: InputDecoration(
+            icon: Icon(Icons.flag),
+            label: Text('状态'),
+            border: OutlineInputBorder(),
           ),
+          items: TaskState.values
+              .map(
+                (state) =>
+                    DropdownMenuItem(value: state, child: state.displayText),
+              )
+              .toList(),
+          onChanged: (value) => setState(() => taskState = value ?? .pending),
         ), // 状态
       ],
     );
@@ -138,16 +145,24 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
   /// 提交
   void _submit() {
     if (_formKeys.currentState?.validate() == true) {
+      final createMode = widget.initialTask == null;
       // 创建任务
       final newTask = buildTask(
-        id: Uuid().v4(),
+        id: createMode ? Uuid().v4() : widget.initialTask!.id,
         name: taskNameController.text,
         notes: taskNotesController.text,
         state: taskState,
-        createdStamp: DateTime.now(),
+        createdStamp: createMode
+            ? DateTime.now()
+            : widget.initialTask!.createdStamp,
       );
       // 添加到任务列表
-      ref.read(taskListProvider.notifier).add(newTask);
+      final taskListNotifier = ref.read(taskListProvider.notifier);
+      if (createMode) {
+        taskListNotifier.add(newTask);
+      } else {
+        taskListNotifier.update(newTask);
+      }
       // 返回上一页
       Navigator.pop(context);
     }
