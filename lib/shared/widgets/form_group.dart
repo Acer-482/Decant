@@ -16,8 +16,8 @@ class FormGroup extends StatelessWidget {
 
   const FormGroup({
     super.key,
-    this.padding = const .all(8),
-    this.spacing = 4,
+    this.padding = const .all(14),
+    this.spacing = 10,
     required this.title,
     this.formItems = const [],
   });
@@ -33,7 +33,7 @@ class FormGroup extends StatelessWidget {
             Text(
               title,
               textAlign: .center,
-              style: TextStyle(fontSize: 30, fontWeight: .bold),
+              style: TextStyle(fontSize: 18, fontWeight: .bold),
             ),
             ...formItems,
           ],
