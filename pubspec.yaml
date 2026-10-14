@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  intl: ^0.20.3
   uuid: ^4.6.0 # UUID 生成
 
   # 文件选择
