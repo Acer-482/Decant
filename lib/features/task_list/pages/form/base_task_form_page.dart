@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:media_transcoder/domain/task/base_task.dart';
 import 'package:media_transcoder/domain/task/task_state.dart';
 import 'package:media_transcoder/features/task_list/providers/task_list_notifier.dart';
@@ -73,6 +74,7 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
     final formWidgets = [
       _buildBaseTaskForm(),
       ...buildFormWidgets(context),
+      if (widget.initialTask != null) _buildOtherInfo(widget.initialTask!),
     ]; // 表单控件
     return Scaffold(
       appBar: AppBar(title: Text(formTitle)),
@@ -107,7 +109,7 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
           decoration: InputDecoration(
             icon: Icon(Icons.abc),
             label: Text('名称'),
-            hint: Text('该任务名称，将会显示在任务列表标题'),
+            hint: Text('将会显示在任务列表标题'),
             border: OutlineInputBorder(),
           ),
           validator: (value) =>
@@ -138,6 +140,34 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
               .toList(),
           onChanged: (value) => setState(() => taskState = value ?? .pending),
         ), // 状态
+      ],
+    );
+  }
+
+  Widget _buildOtherInfo(BaseTask initialTask) {
+    return FormGroup(
+      title: '其他信息',
+      formItems: [
+        ListTile(
+          leading: Icon(Icons.timelapse),
+          title: Text('ID'),
+          trailing: SelectableText(initialTask.id),
+        ),
+        ListTile(
+          leading: Icon(Icons.timelapse),
+          title: Text('创建时间'),
+          trailing: SelectableText(
+            DateFormat.yMMMd().format(initialTask.createdStamp),
+          ),
+        ),
+        if (initialTask.finishedStamp != null)
+          ListTile(
+            leading: Icon(Icons.timelapse),
+            title: Text('完成时间'),
+            trailing: SelectableText(
+              DateFormat.yMMMd().format(initialTask.finishedStamp!),
+            ),
+          ),
       ],
     );
   }
