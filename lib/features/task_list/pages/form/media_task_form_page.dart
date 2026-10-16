@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_transcoder/domain/media/media_source/local_media_file_source.dart';
 import 'package:media_transcoder/domain/task/media_transcode_task.dart';
 import 'package:media_transcoder/domain/task/task_state.dart';
+import 'package:media_transcoder/features/media/widgets/media_info_card.dart';
 import 'package:media_transcoder/features/task_list/pages/form/base_task_form_page.dart';
 import 'package:media_transcoder/shared/widgets/form_group.dart';
 
@@ -55,6 +56,8 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
               label: Text('选择文件'),
             ),
           ),
+          if (_mediaPath != null)
+            MediaInfoCard(LocalMediaFileSource(path: _mediaPath!)),
         ],
       ),
     ];
