@@ -49,4 +49,20 @@ class MediaFormatUtils {
     if (value >= 1000) return '${(value / 1000).toStringAsFixed(1)} kHz';
     return '$value Hz';
   }
+
+  /// 声道布局
+  ///
+  /// 例：
+  /// - "stereo", 2 → "立体声"
+  /// - "mono", 1   → "单声道"
+  /// - "5.1", 6    → "5.1 环绕"
+  static String channelLayout(String? layout, int? channels) {
+    return switch (layout) {
+      'mono' => '单声道',
+      'stereo' => '立体声',
+      '5.1' => '5.1 环绕',
+      '7.1' => '7.1 环绕',
+      _ => channels != null ? '$channels 声道' : '未知',
+    };
+  }
 }
