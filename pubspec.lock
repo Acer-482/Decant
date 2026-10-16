@@ -318,6 +318,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_animate:
+    dependency: "direct main"
+    description:
+      name: flutter_animate
+      sha256: "7befe2d3252728afb77aecaaea1dec88a89d35b9b1d2eea6d04479e8af9117b5"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.5.2"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -339,6 +347,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.4.3"
+  flutter_shaders:
+    dependency: transitive
+    description:
+      name: flutter_shaders
+      sha256: "16cd456daf2fd6ed7ac0c5168716c5e2fe18f91d82631b775f1af9100fb3f586"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -526,7 +542,7 @@ packages:
     source: hosted
     version: "3.0.0"
   path:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path
       sha256: "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
@@ -820,4 +836,4 @@ packages:
     version: "3.1.4"
 sdks:
   dart: ">=3.13.5 <4.0.0"
-  flutter: ">=3.38.0"
+  flutter: ">=3.41.0"

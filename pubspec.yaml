@@ -14,12 +14,11 @@ dependencies:
     sdk: flutter
   
   intl: ^0.20.3
+  path: ^1.9.1 # 路径处理
   uuid: ^4.6.0 # UUID 生成
-
+  flutter_animate: ^4.5.2 # 动画
+  file_picker: ^13.1.0 # 文件选择
   desktop_drop: ^0.8.4 # 文件拖拽
-
-  # 文件选择
-  file_picker: ^13.1.0
 
   # 状态管理
   provider: ^6.1.5+1 # Provider
