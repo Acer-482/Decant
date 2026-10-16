@@ -26,22 +26,6 @@ class MediaFormatUtils {
     return '$value bps';
   }
 
-  /// 文件大小转换
-  ///
-  /// 例："1293942784" → "1234.0 MB"
-  static String fileSize(String? bytes) {
-    final value = int.tryParse(bytes ?? '') ?? 0;
-    if (value <= 0) return '未知';
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    var size = value.toDouble();
-    var i = 0;
-    while (size >= 1024 && i < units.length - 1) {
-      size /= 1024;
-      i++;
-    }
-    return '${size.toStringAsFixed(i == 0 ? 0 : 1)} ${units[i]}';
-  }
-
   /// 帧率分数
   ///
   /// 例："25/1" → "25 fps"

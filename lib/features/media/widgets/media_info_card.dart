@@ -3,6 +3,7 @@ import 'package:ffmpeg_kit_flutter_new/media_information.dart';
 import 'package:flutter/material.dart';
 import 'package:media_transcoder/domain/media/media_source/local_media_file_source.dart';
 import 'package:media_transcoder/domain/media/media_source/media_source.dart';
+import 'package:media_transcoder/shared/utils/file_utils.dart';
 import 'package:media_transcoder/shared/utils/media_format_utils.dart';
 
 /// 媒体信息卡
@@ -82,9 +83,7 @@ class _MediaInfoCardState extends State<MediaInfoCard> {
         ListTile(
           dense: true,
           title: Text('大小'),
-          subtitle: SelectableText(
-            MediaFormatUtils.fileSize(mediaInfo.getSize()),
-          ),
+          subtitle: SelectableText(FileUtils.fileSizeStr(mediaInfo.getSize())),
         ),
         ListTile(
           dense: true,
