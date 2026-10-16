@@ -5,7 +5,7 @@ import 'package:media_transcoder/domain/task/base_task.dart';
 import 'package:media_transcoder/domain/task/task_state.dart';
 import 'package:media_transcoder/features/task_list/providers/task_list_notifier.dart';
 import 'package:media_transcoder/features/task_list/utils/task_state_ui.dart';
-import 'package:media_transcoder/shared/widgets/form_group.dart';
+import 'package:media_transcoder/shared/widgets/option_group.dart';
 import 'package:uuid/uuid.dart';
 
 /// 任务表单页面
@@ -101,9 +101,9 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
 
   /// 构建基本任务表单
   Widget _buildBaseTaskForm() {
-    return FormGroup(
+    return OptionGroup(
       title: '基本',
-      formItems: [
+      children: [
         TextFormField(
           controller: taskNameController,
           decoration: InputDecoration(
@@ -145,9 +145,9 @@ abstract class BaseTaskFormPageState<T extends BaseTask>
   }
 
   Widget _buildOtherInfo(BaseTask initialTask) {
-    return FormGroup(
+    return OptionGroup(
       title: '其他信息',
-      formItems: [
+      children: [
         ListTile(
           leading: Icon(Icons.timelapse),
           title: Text('ID'),

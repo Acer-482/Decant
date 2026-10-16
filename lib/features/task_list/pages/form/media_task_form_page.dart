@@ -6,7 +6,7 @@ import 'package:media_transcoder/domain/task/media_transcode_task.dart';
 import 'package:media_transcoder/domain/task/task_state.dart';
 import 'package:media_transcoder/features/media/widgets/media_info_card.dart';
 import 'package:media_transcoder/features/task_list/pages/form/base_task_form_page.dart';
-import 'package:media_transcoder/shared/widgets/form_group.dart';
+import 'package:media_transcoder/shared/widgets/option_group.dart';
 
 /// 媒体任务表单页面
 class MediaTranscodeTaskFormPage extends BaseTaskFormPage<MediaTranscodeTask> {
@@ -45,9 +45,9 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
   @override
   List<Widget> buildFormWidgets(BuildContext context) {
     return [
-      FormGroup(
+      OptionGroup(
         title: '媒体转码',
-        formItems: [
+        children: [
           ListTile(
             title: Text('媒体源'),
             subtitle: _mediaPath == null ? null : Text(_mediaPath!),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// 表单组
-class FormGroup extends StatelessWidget {
+/// 选项组
+class OptionGroup extends StatelessWidget {
   /// 内边距
   final EdgeInsetsGeometry padding;
 
@@ -12,14 +12,14 @@ class FormGroup extends StatelessWidget {
   final String title;
 
   /// 表单项
-  final List<Widget> formItems;
+  final List<Widget> children;
 
-  const FormGroup({
+  const OptionGroup({
     super.key,
     this.padding = const .all(14),
     this.spacing = 10,
     required this.title,
-    this.formItems = const [],
+    this.children = const [],
   });
 
   @override
@@ -35,7 +35,7 @@ class FormGroup extends StatelessWidget {
               textAlign: .center,
               style: TextStyle(fontSize: 18, fontWeight: .bold),
             ),
-            ...formItems,
+            ...children,
           ],
         ),
       ),
