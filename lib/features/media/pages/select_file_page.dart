@@ -7,7 +7,7 @@ import 'package:media_transcoder/features/media/providers/media_info_provider.da
 import 'package:media_transcoder/features/media/widgets/file_info_card.dart';
 import 'package:media_transcoder/features/media/widgets/media_info_card.dart';
 
-/// 转码页面
+/// 选择文件页面
 class SelectFilePage extends ConsumerStatefulWidget {
   const SelectFilePage({super.key});
 
