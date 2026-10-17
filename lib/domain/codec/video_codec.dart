@@ -1,5 +1,7 @@
+import 'package:media_transcoder/domain/codec/media_codec.dart';
+
 /// 媒体编码格式
-enum VideoCodec {
+enum VideoCodec implements MediaCodec {
   h264('h264', 'H.264'),
   hevc('hevc', 'H.265'),
   av1('av1', 'AV1'),
@@ -11,12 +13,10 @@ enum VideoCodec {
   dnxhd('dnxhd', 'DNxHD'),
   ffv1('ffv1', 'FFV1');
 
-  /// FFprobe 名称
-  ///
-  /// 传入获取到的 codec_name 参数
+  @override
   final String ffprobeName;
 
-  /// 通用名
+  @override
   final String displayName;
 
   const VideoCodec(this.ffprobeName, this.displayName);

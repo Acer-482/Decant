@@ -1,5 +1,7 @@
+import 'package:media_transcoder/domain/codec/media_codec.dart';
+
 /// 音频编码格式
-enum AudioCodec {
+enum AudioCodec implements MediaCodec {
   aac('aac', 'AAC'),
   mp3('mp3', 'MP3'),
   opus('opus', 'Opus'),
@@ -12,10 +14,10 @@ enum AudioCodec {
   pcmS16le('pcm_s16le', 'PCM 16bit'),
   pcmS24le('pcm_s24le', 'PCM 24bit');
 
-  /// FFprobe名称
+  @override
   final String ffprobeName;
 
-  /// 显示名称
+  @override
   final String displayName;
 
   const AudioCodec(this.ffprobeName, this.displayName);
