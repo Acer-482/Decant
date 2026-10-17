@@ -168,7 +168,9 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: () {},
+            onPressed: ref.watch(mediaInfoProvider(_selectedFile!)).hasValue
+                ? () {}
+                : null,
             icon: const Icon(Icons.play_arrow),
             label: const Text('开始转码'),
             style: FilledButton.styleFrom(
