@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/features/media/pages/transcode_page.dart';
+import 'package:media_transcoder/features/media/pages/select_file_page.dart';
 import 'package:media_transcoder/features/task_list/pages/task_list_page.dart';
 
 /// 导航项
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     _NavigationItem(
       icon: const Icon(Icons.home),
       name: '主页',
-      builder: (context) => const TranscodePage(),
+      builder: (context) => const SelectFilePage(),
     ),
     _NavigationItem(
       icon: const Icon(Icons.list_alt),

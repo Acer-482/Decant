@@ -8,14 +8,14 @@ import 'package:media_transcoder/features/media/widgets/file_info_card.dart';
 import 'package:media_transcoder/features/media/widgets/media_info_card.dart';
 
 /// 转码页面
-class TranscodePage extends ConsumerStatefulWidget {
-  const TranscodePage({super.key});
+class SelectFilePage extends ConsumerStatefulWidget {
+  const SelectFilePage({super.key});
 
   @override
-  ConsumerState<TranscodePage> createState() => _TranscodePageState();
+  ConsumerState<SelectFilePage> createState() => _SelectFilePageState();
 }
 
-class _TranscodePageState extends ConsumerState<TranscodePage> {
+class _SelectFilePageState extends ConsumerState<SelectFilePage> {
   bool _dragging = false; // 正在拖拽文件
 
   String? _selectedFile; // 选中的文件
