@@ -16,7 +16,7 @@ class FileInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final file = File(path);
     final infoList = [
-      _FileInfoItem('名称', FileUtils.baseName(path)),
+      _FileInfoItem('名称', FileUtils.fileName(path)),
       _FileInfoItem('类型', FileUtils.fileExtension(path)),
       _FileInfoItem('大小', FileUtils.fileSize(file.lengthSync())),
       _FileInfoItem(
