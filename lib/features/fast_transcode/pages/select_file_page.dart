@@ -3,9 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/media/providers/media_info_provider.dart';
-import 'package:media_transcoder/features/media/widgets/file_info_card.dart';
-import 'package:media_transcoder/features/media/widgets/media_info_card.dart';
+import 'package:media_transcoder/features/fast_transcode/providers/media_info_provider.dart';
+import 'package:media_transcoder/features/fast_transcode/widgets/file_info_card.dart';
+import 'package:media_transcoder/features/fast_transcode/widgets/media_info_card.dart';
 
 /// 选择文件页面
 class SelectFilePage extends ConsumerStatefulWidget {
