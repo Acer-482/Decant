@@ -12,10 +12,18 @@ class AudioStreamInfo extends BaseStreamInfo with AudioStreamInfoMappable {
   /// 通道
   final int channels;
 
+  /// 声道布局
+  final String? channelLayout;
+
+  /// 码率 (bps)
+  final String? bitRate;
+
   const AudioStreamInfo({
     required super.index,
     required super.codecName,
     required this.sampleRate,
     required this.channels,
+    this.channelLayout,
+    this.bitRate,
   });
 }

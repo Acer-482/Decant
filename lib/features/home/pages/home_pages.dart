@@ -7,16 +7,13 @@ class _NavigationItem {
   final Icon icon; // 图标
   final String name; // 名称
   final String description; // 描述
-  final Widget Function(BuildContext context) builder; // 页面构建器
-
-  static Widget _defaultBuilder(BuildContext context) =>
-      const SizedBox.shrink();
+  final Widget page; // 页面
 
   const _NavigationItem({
     required this.icon,
     required this.name,
     this.description = '',
-    this.builder = _defaultBuilder,
+    this.page = const SizedBox.shrink(),
   });
 }
 
@@ -33,13 +30,13 @@ class _HomePageState extends State<HomePage> {
     _NavigationItem(
       icon: const Icon(Icons.home),
       name: '主页',
-      builder: (context) => const FastTranscodePage(),
+      page: const FastTranscodePage(),
     ),
     _NavigationItem(
       icon: const Icon(Icons.list_alt),
       name: '任务',
       description: '查看正在进行的任务',
-      builder: (context) => const TaskListPage(),
+      page: const TaskListPage(),
     ),
     _NavigationItem(icon: const Icon(Icons.settings), name: '设置'),
   ]; // 导航项
@@ -68,9 +65,7 @@ class _HomePageState extends State<HomePage> {
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
-        children: _navigationItems
-            .map((item) => item.builder(context))
-            .toList(), // 构建页面内容
+        children: _navigationItems.map((item) => item.page).toList(), // 构建页面内容
       ), // 页面浏览器
     ); // 页面骨架
   }
