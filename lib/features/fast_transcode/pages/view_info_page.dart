@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_transcoder/features/fast_transcode/models/fast_transcode_state.dart';
@@ -21,22 +20,7 @@ class ViewInfoPage extends ConsumerWidget {
   Widget _buildInfoPage(WidgetRef ref) {
     final state = ref.read(fastTranscodeProvider); // 状态
     final notifier = ref.read(fastTranscodeProvider.notifier); // 状态监听器
-    return Container(
-      padding: .all(10),
-      child: Stack(
-        children: [
-          _buildInfoCardList(ref, state, notifier),
-          Positioned(
-            top: 2,
-            right: 2,
-            child: IconButton.filledTonal(
-              onPressed: () => notifier.reset(), // 重置
-              icon: Icon(Icons.cancel_outlined),
-            ), // 取消按钮
-          ), // 置于右上角
-        ],
-      ),
-    );
+    return _buildInfoCardList(ref, state, notifier);
   }
 
   /// 构建信息列表

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_transcoder/features/fast_transcode/pages/select_file_page.dart';
@@ -14,14 +14,31 @@ class FastTranscodePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(fastTranscodeProvider);
-    return AnimatedSwitcher(
-      duration: 600.ms,
-      child: state.step == .selectFile
-          ? const SelectFilePage()
-          : state.step == .viewInfo
-          ? const ViewInfoPage()
-          : const TranscodePage(),
+    final state = ref.watch(fastTranscodeProvider); // 状态
+    final notifier = ref.read(fastTranscodeProvider.notifier); // 状态监听器
+    return Container(
+      padding: .all(10),
+      child: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: 600.ms,
+            child: state.step == .selectFile
+                ? const SelectFilePage()
+                : state.step == .viewInfo
+                ? const ViewInfoPage()
+                : TranscodePage(filePath: state.filePath!),
+          ),
+          if (state.step != .selectFile)
+            Positioned(
+              top: 2,
+              right: 2,
+              child: IconButton.filledTonal(
+                onPressed: () => notifier.reset(), // 重置
+                icon: Icon(Icons.cancel_outlined),
+              ), // 取消按钮
+            ), // 置于右上角
+        ],
+      ),
     );
   }
 }
