@@ -2,6 +2,7 @@ import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_transcoder/domain/media/media_info.dart';
 import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
@@ -105,16 +106,20 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: switch (_status) {
-        TranscodeStatus.running => _buildRunning(),
-        TranscodeStatus.success => _buildSuccess(),
-        TranscodeStatus.failed => _buildFailed(),
-      },
+      child: AnimatedSwitcher(
+        duration: 400.ms,
+        child: switch (_status) {
+          TranscodeStatus.running => _buildRunning(),
+          TranscodeStatus.success => _buildSuccess(),
+          TranscodeStatus.failed => _buildFailed(),
+        },
+      ),
     );
   }
 
   Widget _buildRunning() {
     return Column(
+      key: ValueKey('running'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const CircularProgressIndicator(),
@@ -124,6 +129,11 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
           style: const TextStyle(fontSize: 18),
         ),
         const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: _progress,
+          semanticsLabel: (_progress * 100).toStringAsFixed(0),
+        ),
+        const SizedBox(height: 8),
         const Text('请勿关闭应用', style: TextStyle(color: Colors.grey)),
       ],
     );
@@ -131,6 +141,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   Widget _buildSuccess() {
     return Column(
+      key: ValueKey('success'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
@@ -170,6 +181,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   Widget _buildFailed() {
     return Column(
+      key: ValueKey('failed'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Icon(Icons.error_outline, color: Colors.red, size: 80),
