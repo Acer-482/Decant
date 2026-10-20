@@ -1,9 +1,13 @@
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:media_transcoder/domain/encoder/media_encoder.dart';
 import 'package:media_transcoder/domain/encoder/encoder_platform.dart';
 import 'package:media_transcoder/domain/encoder/encoder_type.dart';
 import 'package:media_transcoder/domain/codec/video_codec.dart';
 
+part 'video_encoder.mapper.dart';
+
 /// 媒体解码器
+@MappableEnum()
 enum VideoEncoder implements MediaEncoder {
   // H.264 //
   libx264(VideoCodec.h264, 'libx264', type: .software),

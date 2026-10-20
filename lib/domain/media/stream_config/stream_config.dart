@@ -13,5 +13,5 @@ abstract class StreamConfig with StreamConfigMappable {
   /// 是否启用
   final bool enabled;
 
-  const StreamConfig({this.copyMode = false, this.enabled = true});
+  const StreamConfig({this.copyMode = true, this.enabled = true});
 }
