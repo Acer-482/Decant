@@ -57,9 +57,11 @@ class ViewInfoPage extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: hasMediaInfo ? () => notifier.nextStep() : null,
+            onPressed: hasMediaInfo
+                ? () => notifier.startConfigOptions()
+                : null,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('开始转码'),
+            label: const Text('进入转码选项'),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
             ),

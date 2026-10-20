@@ -4,11 +4,11 @@ import 'package:media_transcoder/features/fast_transcode/providers/media_info_pr
 import 'package:media_transcoder/features/fast_transcode/widgets/transcode_options_card.dart';
 
 /// 转码页面
-class TranscodePage extends ConsumerWidget {
+class TranscodeOptionsPage extends ConsumerWidget {
   /// 文件路径
   final String filePath;
 
-  const TranscodePage({super.key, required this.filePath});
+  const TranscodeOptionsPage({super.key, required this.filePath});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

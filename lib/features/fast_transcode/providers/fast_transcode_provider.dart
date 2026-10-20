@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
 import 'package:media_transcoder/features/fast_transcode/models/fast_transcode_state.dart';
 
 /// 快速转码状态提供器
@@ -22,14 +23,13 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
     state = const FastTranscodeState(); // 回到第一步
   }
 
-  /// 下一步
-  void nextStep() {
-    if (state.step == .selectFile) {
-      state = state.copyWith(step: .viewInfo);
-    } else if (state.step == .viewInfo) {
-      state = state.copyWith(step: .transcoding);
-    } else if (state.step == .transcoding) {
-      state = state.copyWith(step: .finish);
-    }
+  /// 开始配置
+  void startConfigOptions() {
+    state = state.copyWith(step: .configureTranscodeOptions);
+  }
+
+  /// 开始转码
+  void startTranscoding(List<StreamConfig> configs) {
+    state = state.copyWith(step: .transcoding, streamConfigs: configs);
   }
 }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_transcoder/features/fast_transcode/pages/select_file_page.dart';
-import 'package:media_transcoder/features/fast_transcode/pages/transcode_page.dart';
+import 'package:media_transcoder/features/fast_transcode/pages/transcode_options_page.dart';
+import 'package:media_transcoder/features/fast_transcode/pages/transcoding_page.dart';
 import 'package:media_transcoder/features/fast_transcode/pages/view_info_page.dart';
 import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
 
@@ -22,11 +23,15 @@ class FastTranscodePage extends ConsumerWidget {
         children: [
           AnimatedSwitcher(
             duration: 600.ms,
-            child: state.step == .selectFile
-                ? const SelectFilePage()
-                : state.step == .viewInfo
-                ? const ViewInfoPage()
-                : TranscodePage(filePath: state.filePath!),
+            child: switch (state.step) {
+              .selectFile => const SelectFilePage(),
+              .viewInfo => const ViewInfoPage(),
+              .configureTranscodeOptions => TranscodeOptionsPage(
+                filePath: state.filePath!,
+              ),
+              .transcoding => TranscodingPage(filePath: state.filePath!),
+              .finish => const Center(child: Text('转码完成')),
+            },
           ),
           if (state.step != .selectFile)
             Positioned(

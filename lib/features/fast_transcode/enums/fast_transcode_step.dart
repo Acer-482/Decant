@@ -6,6 +6,9 @@ enum FastTranscodeStep {
   /// 预览信息
   viewInfo,
 
+  /// 配置转码选项
+  configureTranscodeOptions,
+
   /// 转码
   transcoding,
 
