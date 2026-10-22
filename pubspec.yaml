@@ -1,5 +1,5 @@
 name: decant
-description: "Decant"
+description: "A stream-level media transcoder built on FFmpeg."
 publish_to: "none"
 version: 0.1.0
 
