@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/task/base_task.dart';
-import 'package:media_transcoder/domain/task/media_transcode_task.dart';
-import 'package:media_transcoder/features/task_list/pages/form/media_task_form_page.dart';
-import 'package:media_transcoder/features/task_list/providers/task_list_notifier.dart';
-import 'package:media_transcoder/features/task_list/utils/task_state_ui.dart';
+import 'package:decant/domain/task/base_task.dart';
+import 'package:decant/domain/task/media_transcode_task.dart';
+import 'package:decant/features/task_list/pages/form/media_task_form_page.dart';
+import 'package:decant/features/task_list/providers/task_list_notifier.dart';
+import 'package:decant/features/task_list/utils/task_state_ui.dart';
 
 /// 任务列表页面
 class TaskListPage extends ConsumerWidget {

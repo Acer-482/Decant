@@ -1,5 +1,5 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/domain/media/stream_info/base_stream_info.dart';
+import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 
 part 'audio_stream_info.mapper.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/fast_transcode/models/fast_transcode_state.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:media_transcoder/features/fast_transcode/widgets/file_info_card.dart';
-import 'package:media_transcoder/features/fast_transcode/widgets/media_info_card.dart';
+import 'package:decant/features/fast_transcode/models/fast_transcode_state.dart';
+import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
+import 'package:decant/features/fast_transcode/widgets/file_info_card.dart';
+import 'package:decant/features/fast_transcode/widgets/media_info_card.dart';
 
 /// 浏览信息页面
 class ViewInfoPage extends ConsumerWidget {

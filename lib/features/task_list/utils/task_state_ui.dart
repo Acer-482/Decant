@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/domain/task/task_state.dart';
+import 'package:decant/domain/task/task_state.dart';
 
 extension TaskStateUi on TaskState {
   /// 显示名称

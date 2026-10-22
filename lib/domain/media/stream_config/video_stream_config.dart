@@ -1,6 +1,6 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/domain/encoder/video_encoder.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
+import 'package:decant/domain/encoder/video_encoder.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
 
 part 'video_stream_config.mapper.dart';
 

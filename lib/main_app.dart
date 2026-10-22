@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/home/pages/home_pages.dart';
+import 'package:decant/features/home/pages/home_pages.dart';
 
 /// 主程序
 class MainApp extends StatelessWidget {

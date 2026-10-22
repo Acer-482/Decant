@@ -1,7 +1,7 @@
-name: media_transcoder
-description: "A new Flutter project."
+name: decant
+description: "Decant"
 publish_to: "none"
-version: 0.1.0+1
+version: 0.1.0
 
 environment:
   sdk: ^3.13.5

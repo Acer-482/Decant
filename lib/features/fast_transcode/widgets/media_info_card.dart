@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/domain/media/media_info.dart';
-import 'package:media_transcoder/features/fast_transcode/widgets/media_info_content.dart';
-import 'package:media_transcoder/shared/widgets/title_card.dart';
+import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/features/fast_transcode/widgets/media_info_content.dart';
+import 'package:decant/shared/widgets/title_card.dart';
 
 /// 媒体信息卡
 class MediaInfoCard extends StatelessWidget {

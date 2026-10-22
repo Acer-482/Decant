@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/domain/codec/audio_codec.dart';
-import 'package:media_transcoder/domain/codec/media_codec.dart';
-import 'package:media_transcoder/domain/codec/video_codec.dart';
-import 'package:media_transcoder/domain/media/media_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/audio_stream_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/video_stream_info.dart';
-import 'package:media_transcoder/shared/utils/file_utils.dart';
-import 'package:media_transcoder/shared/utils/media_format_utils.dart';
-import 'package:media_transcoder/shared/widgets/info_row.dart';
+import 'package:decant/domain/codec/audio_codec.dart';
+import 'package:decant/domain/codec/media_codec.dart';
+import 'package:decant/domain/codec/video_codec.dart';
+import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
+import 'package:decant/domain/media/stream_info/video_stream_info.dart';
+import 'package:decant/shared/utils/file_utils.dart';
+import 'package:decant/shared/utils/media_format_utils.dart';
+import 'package:decant/shared/widgets/info_row.dart';
 
 /// 媒体信息
 class MediaInfoContent extends StatelessWidget {

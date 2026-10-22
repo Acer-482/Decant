@@ -1,6 +1,6 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
-import 'package:media_transcoder/features/fast_transcode/enums/fast_transcode_step.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/features/fast_transcode/enums/fast_transcode_step.dart';
 
 part 'fast_transcode_state.mapper.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/task/base_task.dart';
+import 'package:decant/domain/task/base_task.dart';
 
 /// 任务列表提供器
 final taskListProvider =

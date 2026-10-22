@@ -3,7 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 
 /// 选择文件页面
 class SelectFilePage extends ConsumerStatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
-import 'package:media_transcoder/features/fast_transcode/models/fast_transcode_state.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/features/fast_transcode/models/fast_transcode_state.dart';
 
 /// 快速转码状态提供器
 final fastTranscodeProvider =

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/features/fast_transcode/pages/fast_transcode_page.dart';
-import 'package:media_transcoder/features/task_list/pages/task_list_page.dart';
+import 'package:decant/features/fast_transcode/pages/fast_transcode_page.dart';
+import 'package:decant/features/task_list/pages/task_list_page.dart';
 
 /// 导航项
 class _NavigationItem {

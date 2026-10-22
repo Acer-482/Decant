@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:media_transcoder/features/fast_transcode/widgets/transcode_options_card.dart';
+import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
+import 'package:decant/features/fast_transcode/widgets/transcode_options_card.dart';
 
 /// 转码页面
 class TranscodeOptionsPage extends ConsumerWidget {

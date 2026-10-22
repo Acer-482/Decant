@@ -4,10 +4,10 @@ import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:media_transcoder/domain/encoder/video_encoder.dart';
-import 'package:media_transcoder/domain/encoder/encoder_platform.dart';
-import 'package:media_transcoder/domain/encoder/encoder_type.dart';
-import 'package:media_transcoder/domain/encoder/available_encoder.dart';
+import 'package:decant/domain/encoder/video_encoder.dart';
+import 'package:decant/domain/encoder/encoder_platform.dart';
+import 'package:decant/domain/encoder/encoder_type.dart';
+import 'package:decant/domain/encoder/available_encoder.dart';
 
 /// 测试页面
 class FFmpegTestPage extends StatefulWidget {

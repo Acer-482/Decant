@@ -1,9 +1,9 @@
 import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/media/media_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/audio_stream_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/unknown_stream_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/video_stream_info.dart';
+import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
+import 'package:decant/domain/media/stream_info/unknown_stream_info.dart';
+import 'package:decant/domain/media/stream_info/video_stream_info.dart';
 
 /// 媒体信息提供器
 ///

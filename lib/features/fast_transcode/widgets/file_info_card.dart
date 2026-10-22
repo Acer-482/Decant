@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:media_transcoder/shared/widgets/info_row.dart';
-import 'package:media_transcoder/shared/widgets/title_card.dart';
-import 'package:media_transcoder/shared/utils/file_utils.dart';
+import 'package:decant/shared/widgets/info_row.dart';
+import 'package:decant/shared/widgets/title_card.dart';
+import 'package:decant/shared/utils/file_utils.dart';
 
 /// 文件信息组件
 class FileInfoCard extends StatelessWidget {

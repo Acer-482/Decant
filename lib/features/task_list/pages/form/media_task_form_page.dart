@@ -1,11 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/media/media_source/local_media_file_source.dart';
-import 'package:media_transcoder/domain/task/media_transcode_task.dart';
-import 'package:media_transcoder/domain/task/task_state.dart';
-import 'package:media_transcoder/features/task_list/pages/form/base_task_form_page.dart';
-import 'package:media_transcoder/shared/widgets/option_group.dart';
+import 'package:decant/domain/media/media_source/local_media_file_source.dart';
+import 'package:decant/domain/task/media_transcode_task.dart';
+import 'package:decant/domain/task/task_state.dart';
+import 'package:decant/features/task_list/pages/form/base_task_form_page.dart';
+import 'package:decant/shared/widgets/option_group.dart';
 
 /// 媒体任务表单页面
 class MediaTranscodeTaskFormPage extends BaseTaskFormPage<MediaTranscodeTask> {

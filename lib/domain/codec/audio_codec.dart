@@ -1,4 +1,4 @@
-import 'package:media_transcoder/domain/codec/media_codec.dart';
+import 'package:decant/domain/codec/media_codec.dart';
 
 /// 音频编码格式
 enum AudioCodec implements MediaCodec {

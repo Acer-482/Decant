@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/encoder/audio_encoder.dart';
-import 'package:media_transcoder/domain/encoder/video_encoder.dart';
-import 'package:media_transcoder/domain/media/media_info.dart';
-import 'package:media_transcoder/domain/media/stream_config/audio_stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_config/unknown_stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_config/video_stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_info/audio_stream_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/base_stream_info.dart';
-import 'package:media_transcoder/domain/media/stream_info/video_stream_info.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
-import 'package:media_transcoder/shared/widgets/title_card.dart';
+import 'package:decant/domain/encoder/audio_encoder.dart';
+import 'package:decant/domain/encoder/video_encoder.dart';
+import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/domain/media/stream_config/unknown_stream_config.dart';
+import 'package:decant/domain/media/stream_config/video_stream_config.dart';
+import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
+import 'package:decant/domain/media/stream_info/base_stream_info.dart';
+import 'package:decant/domain/media/stream_info/video_stream_info.dart';
+import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/shared/widgets/title_card.dart';
 
 /// 转码选项卡片
 class TranscodeOptionsCard extends ConsumerStatefulWidget {

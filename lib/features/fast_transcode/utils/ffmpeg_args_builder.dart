@@ -1,7 +1,7 @@
-import 'package:media_transcoder/domain/media/stream_config/audio_stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_config/video_stream_config.dart';
-import 'package:media_transcoder/domain/media/stream_info/base_stream_info.dart';
+import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/domain/media/stream_config/video_stream_config.dart';
+import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 
 class FfmpegArgsBuilder {
   FfmpegArgsBuilder._();

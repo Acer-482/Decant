@@ -4,10 +4,10 @@ import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:media_transcoder/domain/media/media_info.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/fast_transcode_provider.dart';
-import 'package:media_transcoder/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:media_transcoder/features/fast_transcode/utils/ffmpeg_args_builder.dart';
+import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
+import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 

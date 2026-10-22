@@ -1,8 +1,8 @@
 import 'package:dart_mappable/dart_mappable.dart';
-import 'package:media_transcoder/domain/media/media_source/media_source.dart';
-import 'package:media_transcoder/domain/media/stream_config/stream_config.dart';
-import 'package:media_transcoder/domain/task/task_state.dart';
-import 'package:media_transcoder/domain/task/base_task.dart';
+import 'package:decant/domain/media/media_source/media_source.dart';
+import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/domain/task/task_state.dart';
+import 'package:decant/domain/task/base_task.dart';
 
 part 'media_transcode_task.mapper.dart';
 
