@@ -10,6 +10,7 @@ import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
 import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
+import 'package:decant/features/fast_transcode/utils/output_path.dart';
 
 /// 转码状态
 enum TranscodeStatus { running, success, failed }
@@ -36,21 +37,11 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   void initState() {
     super.initState();
 
-    // 设定输出路径
-    _outputPath = _defaultOutputPath(
-      widget.sources,
-    ); // 以第一个输入为基准，同目录下加 _transcoded 后缀
+    // 输出路径与配置页保持一致
+    _outputPath = defaultOutputPath(widget.sources);
 
     // 延迟一帧执行，先让 UI 渲染出 Loading 状态
     Future.microtask(() => _initAndStart());
-  }
-
-  /// 默认输出路径
-  String _defaultOutputPath(List<BaseSource> sources) {
-    final first = sources.first.input;
-    final dir = p.dirname(first);
-    final name = p.basenameWithoutExtension(first);
-    return p.join(dir, '${name}_transcoded.mp4');
   }
 
   /// 初始化数据并开始转码

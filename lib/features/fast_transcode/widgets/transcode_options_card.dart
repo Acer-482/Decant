@@ -17,13 +17,20 @@ import 'package:decant/shared/widgets/title_card.dart';
 
 /// 转码选项卡片
 ///
-/// 多路输入时按输入分组展示；每条流各自携带 `输入序号:流序号`，
-/// 因此可以自由挑选"用 A 的画面 + B 的声音"。
+/// 多路输入时按输入分组展示;
+/// 每条流各自携带 `输入序号:流序号`
 class TranscodeOptionsCard extends ConsumerStatefulWidget {
   /// 输入媒体
   final List<MediaInput> inputs;
 
-  const TranscodeOptionsCard({super.key, required this.inputs});
+  /// 输出路径（只读展示）
+  final String outputPath;
+
+  const TranscodeOptionsCard({
+    super.key,
+    required this.inputs,
+    required this.outputPath,
+  });
 
   @override
   ConsumerState<TranscodeOptionsCard> createState() =>
@@ -32,16 +39,115 @@ class TranscodeOptionsCard extends ConsumerStatefulWidget {
 
 class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
   /// 流与配置的配对
-  late final List<_StreamEntry> _entries;
+  late List<_StreamEntry> _entries;
 
   @override
   void initState() {
     super.initState();
-    _entries = [
-      for (var i = 0; i < widget.inputs.length; i++)
-        for (final stream in widget.inputs[i].info.streams)
+    _entries = _buildDefaultEntries(widget.inputs);
+  }
+
+  @override
+  void didUpdateWidget(covariant TranscodeOptionsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 输入源增删后需要重建条目，同时尽量保留用户已做的调整
+    if (!_sameInputs(oldWidget.inputs, widget.inputs)) {
+      _entries = _syncEntries(oldWidget.inputs);
+    }
+  }
+
+  /// 判断输入是否发生变化
+  bool _sameInputs(List<MediaInput> a, List<MediaInput> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].source.input != b[i].source.input) return false;
+      final sa = a[i].info.streams;
+      final sb = b[i].info.streams;
+      if (sa.length != sb.length) return false;
+      for (var j = 0; j < sa.length; j++) {
+        if (sa[j].index != sb[j].index) return false;
+      }
+    }
+    return true;
+  }
+
+  /// 全量生成默认条目
+  List<_StreamEntry> _buildDefaultEntries(List<MediaInput> inputs) {
+    return [
+      for (var i = 0; i < inputs.length; i++)
+        for (final stream in inputs[i].info.streams)
           _StreamEntry(stream: stream, config: _defaultConfig(stream, i)),
     ];
+  }
+
+  /// 输入变化后重建条目：保留仍然存在且类型一致的配置
+  List<_StreamEntry> _syncEntries(List<MediaInput> oldInputs) {
+    // 找出被移除的旧输入下标（按 input 比对）
+    int? removed;
+    for (var i = 0; i < oldInputs.length; i++) {
+      final stillThere = widget.inputs.any(
+        (input) => input.source.input == oldInputs[i].source.input,
+      );
+      if (!stillThere) {
+        removed = i;
+        break;
+      }
+    }
+
+    final oldConfigs = <String, StreamConfig>{
+      for (final entry in _entries)
+        '${entry.config.inputIndex}:${entry.config.streamIndex}': entry.config,
+    };
+
+    final next = <_StreamEntry>[];
+    for (var i = 0; i < widget.inputs.length; i++) {
+      final oldIndex = removed == null
+          ? i
+          : (i >= removed ? i + 1 : i); // 被删除的位置之后整体前移一位
+
+      for (final stream in widget.inputs[i].info.streams) {
+        final old = oldConfigs['$oldIndex:${stream.index}'];
+        final config = (old != null && _sameKind(old, stream))
+            ? _renumber(old, i)
+            : _defaultConfig(stream, i);
+        next.add(_StreamEntry(stream: stream, config: config));
+      }
+    }
+    return next;
+  }
+
+  /// 配置类型是否与流类型匹配
+  bool _sameKind(StreamConfig config, BaseStreamInfo stream) {
+    if (config is VideoStreamConfig) return stream is VideoStreamInfo;
+    if (config is AudioStreamConfig) return stream is AudioStreamInfo;
+    return stream is! VideoStreamInfo && stream is! AudioStreamInfo;
+  }
+
+  /// 只改输入序号，保留其余设置
+  StreamConfig _renumber(StreamConfig config, int inputIndex) {
+    return switch (config) {
+      final VideoStreamConfig c => VideoStreamConfig(
+        inputIndex: inputIndex,
+        streamIndex: c.streamIndex,
+        copyMode: c.copyMode,
+        enabled: c.enabled,
+        encoder: c.encoder,
+      ),
+      final AudioStreamConfig c => AudioStreamConfig(
+        inputIndex: inputIndex,
+        streamIndex: c.streamIndex,
+        copyMode: c.copyMode,
+        enabled: c.enabled,
+        encoder: c.encoder,
+      ),
+      final UnknownStreamConfig c => UnknownStreamConfig(
+        inputIndex: inputIndex,
+        streamIndex: c.streamIndex,
+        copyMode: c.copyMode,
+        enabled: c.enabled,
+      ),
+      _ => config,
+    };
   }
 
   /// 为一条流生成默认配置
@@ -106,7 +212,15 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
             for (var i = 0; i < _entries.length; i++)
               if (_entries[i].config.inputIndex == input) _buildStreamTile(i),
           ],
-          const SizedBox(height: 12),
+          const Divider(height: 24),
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.save_alt, size: 18),
+            title: const Text('输出文件'),
+            subtitle: Text(widget.outputPath, maxLines: 1, overflow: .ellipsis),
+          ),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -180,9 +294,7 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     return ExpansionTile(
       title: Text(title),
       subtitle: Text(
-        !config.enabled
-            ? '已禁用'
-            : (config.copyMode ? '复制原流' : '重新编码'),
+        !config.enabled ? '已禁用' : (config.copyMode ? '复制原流' : '重新编码'),
       ),
       childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       children: [

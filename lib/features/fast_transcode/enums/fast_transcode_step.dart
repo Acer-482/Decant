@@ -3,9 +3,6 @@ enum FastTranscodeStep {
   /// 选择文件
   selectFile,
 
-  /// 预览信息
-  viewInfo,
-
   /// 配置转码选项
   configureTranscodeOptions,
 

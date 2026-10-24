@@ -4,12 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:decant/features/fast_transcode/pages/select_file_page.dart';
 import 'package:decant/features/fast_transcode/pages/transcode_options_page.dart';
 import 'package:decant/features/fast_transcode/pages/transcoding_page.dart';
-import 'package:decant/features/fast_transcode/pages/view_info_page.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 
 /// 快速转码页面
 ///
-/// 为了美观，通过有限状态机的方式管理多个页面步骤
+/// 为了美观，通过有限状态机的方式管理多个页面：选择文件 → 配置→ 转码
 class FastTranscodePage extends ConsumerWidget {
   const FastTranscodePage({super.key});
 
@@ -25,7 +24,6 @@ class FastTranscodePage extends ConsumerWidget {
             duration: 600.ms,
             child: switch (state.step) {
               .selectFile => const SelectFilePage(),
-              .viewInfo => const ViewInfoPage(),
               .configureTranscodeOptions => TranscodeOptionsPage(
                 sources: state.sources,
               ),
