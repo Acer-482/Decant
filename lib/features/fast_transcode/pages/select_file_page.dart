@@ -204,21 +204,22 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
   /// 同路径自动去重
   void _addPaths(List<String> paths) {
     if (paths.isEmpty) return;
-    ref
-        .read(fastTranscodeProvider.notifier)
-        .addSources(<BaseSource>[
-          for (final path in paths) FileSource(path: path),
-        ]);
+    ref.read(fastTranscodeProvider.notifier).addSources(<BaseSource>[
+      for (final path in paths) FileSource(path: path),
+    ]);
   }
 
   /// 选择文件
   Future<void> _pickFile() async {
-    final pickedFile = await FilePicker.pickFile(
+    final pickedFiles = await FilePicker.pickFiles(
       dialogTitle: '选择处理文件',
       windowsOptions: WindowsOptions(lockParentWindow: true),
     );
-    if (pickedFile?.path == null) return; // 未选择文件
-    _addPaths([pickedFile!.path!]);
+    if (pickedFiles.isEmpty) return; // 未选择文件
+    _addPaths([
+      for (final file in pickedFiles)
+        if (file.path != null) file.path!,
+    ]);
   }
 
   /// 查看详情
