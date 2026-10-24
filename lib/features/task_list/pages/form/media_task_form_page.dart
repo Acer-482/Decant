@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:decant/domain/media/media_source/local_media_file_source.dart';
+import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/domain/task/media_transcode_task.dart';
 import 'package:decant/domain/task/task_state.dart';
 import 'package:decant/features/task_list/pages/form/base_task_form_page.dart';
@@ -35,8 +35,8 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
   @override
   void initFormWidgets(MediaTranscodeTask? initialTask) {
     /// 为本地媒体文件资源
-    if (initialTask?.source is LocalMediaFileSource) {
-      final localMediaFileSource = initialTask!.source as LocalMediaFileSource;
+    if (initialTask?.source is FileSource) {
+      final localMediaFileSource = initialTask!.source as FileSource;
       _mediaPath = localMediaFileSource.path;
     }
   }
@@ -75,7 +75,7 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
       notes: notes,
       state: state,
       createdStamp: createdStamp,
-      source: LocalMediaFileSource(path: _mediaPath ?? ''),
+      source: FileSource(path: _mediaPath ?? ''),
       streamConfigs: [],
       outputPath: 'output.mp4',
     );
