@@ -1,44 +1,68 @@
 import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
 import 'package:decant/domain/media/stream_config/stream_config.dart';
+import 'package:decant/domain/media/stream_config/unknown_stream_config.dart';
 import 'package:decant/domain/media/stream_config/video_stream_config.dart';
-import 'package:decant/domain/media/stream_info/base_stream_info.dart';
+import 'package:decant/domain/source/base_source.dart';
 
+/// FFmpeg 参数构建
 class FfmpegArgsBuilder {
   FfmpegArgsBuilder._();
 
-  /// 解释流配置到 FFmpeg 命令行参数
-  static List<String> build(
-    List<StreamConfig> configs,
-    List<BaseStreamInfo> streams,
-  ) {
+  /// 把流配置翻译成 `-map` / `-c:*` 参数
+  ///
+  /// 每条启用的配置自带 `输入序号:流序号`，因此多路输入不需要调用方
+  /// 维护"配置列表与流列表顺序对齐"这条隐含约定。
+  static List<String> build(List<StreamConfig> configs) {
     final args = <String>[];
 
-    for (int i = 0; i < configs.length; i++) {
-      final config = configs[i];
+    for (final config in configs) {
+      if (!config.enabled) continue; // 禁用的流不产生任何参数
 
-      if (!config.enabled) continue; // 如果流被禁用时直接跳过，不生成任何 map 和 codec 参数
+      args.addAll(['-map', config.mapTarget]);
 
-      final stream = streams[i];
-      args.addAll(['-map', '0:${stream.index}']); // 映射当前流 (0:${stream.index})
-
-      if (config is VideoStreamConfig) {
-        if (config.copyMode) {
-          args.addAll(['-c:v', 'copy']);
-        } else {
-          args.addAll(['-c:v', config.encoder.ffmpegName]);
-        }
-      } else if (config is AudioStreamConfig) {
-        if (config.copyMode) {
-          args.addAll(['-c:a', 'copy']);
-        } else {
-          args.addAll(['-c:a', config.encoder.ffmpegName]);
-        }
-      } else if (config.copyMode) {
-        // 未知流如果被启用且要求复制，默认加上 copy
-        // 但由于未知流没有区分 v/a/s，稳妥起见这里不写特定流类型的 codec
+      switch (config) {
+        case final VideoStreamConfig video:
+          args.addAll([
+            '-c:v',
+            video.copyMode ? 'copy' : video.encoder.ffmpegName,
+          ]);
+        case final AudioStreamConfig audio:
+          args.addAll([
+            '-c:a',
+            audio.copyMode ? 'copy' : audio.encoder.ffmpegName,
+          ]);
+        case final UnknownStreamConfig unknown:
+          // 未知流没有区分 v/a/s，只能整体 copy
+          if (unknown.copyMode) args.addAll(['-c', 'copy']);
       }
     }
 
     return args;
+  }
+
+  /// 组装完整的 FFmpeg 命令
+  ///
+  /// 形如：`-y -i "a.mp4" -i "b.mkv" -map 0:0 -c:v copy -map 1:1 -c:a aac "out.mp4"`
+  static String buildCommand({
+    required List<BaseSource> sources,
+    required List<StreamConfig> configs,
+    required String outputPath,
+  }) {
+    final buffer = StringBuffer('-y');
+    for (final source in sources) {
+      buffer.write(' -i ${_quote(source.input)}');
+    }
+
+    final args = build(configs);
+    if (args.isNotEmpty) buffer.write(' ${args.join(' ')}');
+
+    buffer.write(' ${_quote(outputPath)}');
+    return buffer.toString();
+  }
+
+  /// 为路径加上引号并转义，避免空格、中文、引号破坏命令
+  static String _quote(String value) {
+    final escaped = value.replaceAll(r'\', r'\\').replaceAll('"', r'\"');
+    return '"$escaped"';
   }
 }

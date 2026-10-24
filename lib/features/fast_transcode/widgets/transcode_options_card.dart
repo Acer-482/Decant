@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:decant/domain/encoder/audio_encoder.dart';
 import 'package:decant/domain/encoder/video_encoder.dart';
-import 'package:decant/domain/media/media_info.dart';
+import 'package:decant/domain/media/media_input.dart';
 import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
 import 'package:decant/domain/media/stream_config/stream_config.dart';
 import 'package:decant/domain/media/stream_config/unknown_stream_config.dart';
@@ -10,74 +10,115 @@ import 'package:decant/domain/media/stream_config/video_stream_config.dart';
 import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
 import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 import 'package:decant/domain/media/stream_info/video_stream_info.dart';
+import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/shared/utils/file_utils.dart';
 import 'package:decant/shared/widgets/title_card.dart';
 
 /// 转码选项卡片
+///
+/// 多路输入时按输入分组展示；每条流各自携带 `输入序号:流序号`，
+/// 因此可以自由挑选"用 A 的画面 + B 的声音"。
 class TranscodeOptionsCard extends ConsumerStatefulWidget {
-  /// 媒体信息
-  final MediaInfo mediaInfo;
+  /// 输入媒体
+  final List<MediaInput> inputs;
 
-  const TranscodeOptionsCard({super.key, required this.mediaInfo});
+  const TranscodeOptionsCard({super.key, required this.inputs});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
+  ConsumerState<TranscodeOptionsCard> createState() =>
       _TranscodeOptionsCardState();
 }
 
 class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
-  /// 流选项
-  late final List<StreamConfig> _streamConfigs;
+  /// 流与配置的配对
+  late final List<_StreamEntry> _entries;
 
   @override
   void initState() {
     super.initState();
-    _streamConfigs = widget.mediaInfo.streams.map((stream) {
-      if (stream is VideoStreamInfo) {
-        return VideoStreamConfig(
-          encoder: VideoEncoder.values.firstWhere(
-            (encoder) =>
-                encoder.codec.ffprobeName == stream.codecName && // 默认编码器
-                encoder.type == .software, // 软件
-            orElse: () => .libx264, // 兜底使用软件编码
-          ),
-        );
-      } // 视频流
-      else if (stream is AudioStreamInfo) {
-        return AudioStreamConfig(
-          encoder: AudioEncoder.values.firstWhere(
-            (encoder) => encoder.codec.ffprobeName == stream.codecName, // 默认编码器
-            orElse: () => .aac, // 兜底使用通用格式
-          ),
-        );
-      } // 音频流
-
-      return const UnknownStreamConfig(); // 未知流
-    }).toList();
+    _entries = [
+      for (var i = 0; i < widget.inputs.length; i++)
+        for (final stream in widget.inputs[i].info.streams)
+          _StreamEntry(stream: stream, config: _defaultConfig(stream, i)),
+    ];
   }
 
-  /// 更新特定流的配置
-  void _updateConfig(int index, StreamConfig newConfig) {
-    setState(() => _streamConfigs[index] = newConfig);
+  /// 为一条流生成默认配置
+  StreamConfig _defaultConfig(BaseStreamInfo stream, int inputIndex) {
+    if (stream is VideoStreamInfo) {
+      return VideoStreamConfig(
+        inputIndex: inputIndex,
+        streamIndex: stream.index,
+        encoder: VideoEncoder.values.firstWhere(
+          (encoder) =>
+              encoder.codec.ffprobeName == stream.codecName && // 默认编码器
+              encoder.type == .software, // 软件
+          orElse: () => .libx264, // 兜底使用软件编码
+        ),
+      );
+    }
+
+    if (stream is AudioStreamInfo) {
+      return AudioStreamConfig(
+        inputIndex: inputIndex,
+        streamIndex: stream.index,
+        encoder: AudioEncoder.values.firstWhere(
+          (encoder) => encoder.codec.ffprobeName == stream.codecName,
+          orElse: () => .aac, // 兜底使用通用格式
+        ),
+      );
+    }
+
+    return UnknownStreamConfig(
+      inputIndex: inputIndex,
+      streamIndex: stream.index,
+    );
+  }
+
+  /// 更新某条流的配置
+  void _updateConfig(int index, StreamConfig config) {
+    setState(() {
+      _entries[index] = _StreamEntry(
+        stream: _entries[index].stream,
+        config: config,
+      );
+    });
+  }
+
+  /// 输入显示名
+  String _inputLabel(int index) {
+    final source = widget.inputs[index].source;
+    if (source is FileSource) return FileUtils.fileName(source.path);
+    return source.input;
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasEnabled = _entries.any((entry) => entry.config.enabled);
     return TitleCard(
       icon: const Icon(Icons.movie),
       title: const Text('转码设置'),
       child: Column(
         children: [
-          for (var i = 0; i < widget.mediaInfo.streams.length; i++)
-            _buildStreamTile(widget.mediaInfo.streams[i], i),
+          for (var input = 0; input < widget.inputs.length; input++) ...[
+            if (widget.inputs.length > 1) _buildInputHeader(input),
+            for (var i = 0; i < _entries.length; i++)
+              if (_entries[i].config.inputIndex == input) _buildStreamTile(i),
+          ],
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () {
-                ref
-                    .read(fastTranscodeProvider.notifier)
-                    .startTranscoding(_streamConfigs); // 存入配置 开始转码
-              },
+              onPressed: hasEnabled
+                  ? () {
+                      ref
+                          .read(fastTranscodeProvider.notifier)
+                          .startTranscoding(
+                            _entries.map((entry) => entry.config).toList(),
+                          ); // 存入配置 开始转码
+                    }
+                  : null,
               icon: const Icon(Icons.play_arrow),
               label: const Text('开始转码'),
               style: FilledButton.styleFrom(
@@ -90,9 +131,36 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     );
   }
 
-  /// 为单个流构建设置面板
-  Widget _buildStreamTile(BaseStreamInfo stream, int index) {
-    final config = _streamConfigs[index];
+  /// 输入分组标题
+  Widget _buildInputHeader(int index) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 2),
+      child: Row(
+        children: [
+          Icon(Icons.input, size: 14, color: theme.colorScheme.primary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              '输入 ${index + 1} · ${_inputLabel(index)}',
+              maxLines: 1,
+              overflow: .ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 为单条流构建设置面板
+  Widget _buildStreamTile(int index) {
+    final entry = _entries[index];
+    final stream = entry.stream;
+    final config = entry.config;
 
     // 获取流显示名称
     String title = '未知流 #${stream.index}';
@@ -111,7 +179,11 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
 
     return ExpansionTile(
       title: Text(title),
-      subtitle: Text(config.copyMode ? '复制原流' : '重新编码'),
+      subtitle: Text(
+        !config.enabled
+            ? '已禁用'
+            : (config.copyMode ? '复制原流' : '重新编码'),
+      ),
       childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       children: [
         // 是否启用
@@ -130,7 +202,7 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
             onChanged: (val) =>
                 _updateConfig(index, config.copyWith(copyMode: val)),
           ),
-          if (!config.copyMode) _buildEncoderSelector(stream, config, index),
+          if (!config.copyMode) _buildEncoderSelector(index, stream, config),
         ],
       ],
     );
@@ -138,9 +210,9 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
 
   /// 构建编码器下拉框
   Widget _buildEncoderSelector(
+    int index,
     BaseStreamInfo stream,
     StreamConfig config,
-    int index,
   ) {
     if (stream is VideoStreamInfo && config is VideoStreamConfig) {
       return DropdownButtonFormField<VideoEncoder>(
@@ -169,16 +241,22 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
           );
         }).toList(),
         onChanged: (val) {
-          if (val != null) {
-            _updateConfig(
-              index,
-              AudioStreamConfig(copyMode: config.copyMode, encoder: val),
-            );
-          }
+          if (val != null) _updateConfig(index, config.copyWith(encoder: val));
         },
       );
     }
 
     return const SizedBox.shrink();
   }
+}
+
+/// 流与其配置的配对
+class _StreamEntry {
+  /// 流信息
+  final BaseStreamInfo stream;
+
+  /// 流配置
+  final StreamConfig config;
+
+  const _StreamEntry({required this.stream, required this.config});
 }

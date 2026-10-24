@@ -1,39 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:decant/domain/media/media_input.dart';
+import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
 import 'package:decant/features/fast_transcode/widgets/transcode_options_card.dart';
 
-/// 转码页面
+/// 转码选项页面
+///
+/// 逐源解析媒体信息，全部就绪后交给 [TranscodeOptionsCard]。
 class TranscodeOptionsPage extends ConsumerWidget {
-  /// 文件路径
-  final String filePath;
+  /// 输入源
+  final List<BaseSource> sources;
 
-  const TranscodeOptionsPage({super.key, required this.filePath});
+  const TranscodeOptionsPage({super.key, required this.sources});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mediaAsyncInfo = ref.watch(mediaInfoProvider(filePath));
-    return Container(
-      padding: .all(10),
-      child: mediaAsyncInfo.when(
-        data: (mediaInfo) {
-          return Column(children: [TranscodeOptionsCard(mediaInfo: mediaInfo)]);
-        },
-        error: (error, stackTrace) => Center(
+    final infos = [
+      for (final source in sources) ref.watch(mediaInfoProvider(source.input)),
+    ];
+
+    if (infos.any((info) => info.isLoading)) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    for (final info in infos) {
+      if (info.hasError) {
+        return Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: .center,
             spacing: 16,
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              Text('获取媒体信息失败\n$error', textAlign: TextAlign.center),
+              Text('获取媒体信息失败\n${info.error}', textAlign: .center),
               ElevatedButton(
-                onPressed: () => ref.invalidate(mediaInfoProvider(filePath)),
+                onPressed: () {
+                  for (final source in sources) {
+                    ref.invalidate(mediaInfoProvider(source.input));
+                  }
+                },
                 child: const Text('重试'),
               ),
             ],
           ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        );
+      }
+    }
+
+    final inputs = [
+      for (var i = 0; i < sources.length; i++)
+        MediaInput(source: sources[i], info: infos[i].requireValue),
+    ];
+
+    return Container(
+      padding: .all(10),
+      child: SingleChildScrollView(
+        child: TranscodeOptionsCard(inputs: inputs),
       ),
     );
   }

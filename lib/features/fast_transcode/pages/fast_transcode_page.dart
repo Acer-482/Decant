@@ -27,9 +27,9 @@ class FastTranscodePage extends ConsumerWidget {
               .selectFile => const SelectFilePage(),
               .viewInfo => const ViewInfoPage(),
               .configureTranscodeOptions => TranscodeOptionsPage(
-                filePath: state.filePath!,
+                sources: state.sources,
               ),
-              .transcoding => TranscodingPage(filePath: state.filePath!),
+              .transcoding => TranscodingPage(sources: state.sources),
               .finish => const Center(child: Text('转码完成')),
             },
           ),

@@ -4,19 +4,22 @@ import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:decant/domain/media/media_info.dart';
+import 'package:path/path.dart' as p;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
 import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
-import 'package:path/path.dart' as p;
-import 'package:url_launcher/url_launcher.dart';
 
+/// 转码状态
 enum TranscodeStatus { running, success, failed }
 
+/// 转码页面
 class TranscodingPage extends ConsumerStatefulWidget {
-  final String filePath;
+  /// 输入源
+  final List<BaseSource> sources;
 
-  const TranscodingPage({super.key, required this.filePath});
+  const TranscodingPage({super.key, required this.sources});
 
   @override
   ConsumerState<TranscodingPage> createState() => _TranscodingPageState();
@@ -29,29 +32,41 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   late String _outputPath;
   double _totalDurationMs = 0.0;
 
-  MediaInfo? _mediaInfo;
-
   @override
   void initState() {
     super.initState();
 
     // 设定输出路径
-    final dir = p.dirname(widget.filePath);
-    final name = p.basenameWithoutExtension(widget.filePath);
-    _outputPath = p.join(dir, '${name}_transcoded.mp4');
+    _outputPath = _defaultOutputPath(
+      widget.sources,
+    ); // 以第一个输入为基准，同目录下加 _transcoded 后缀
 
     // 延迟一帧执行，先让 UI 渲染出 Loading 状态
     Future.microtask(() => _initAndStart());
   }
 
+  /// 默认输出路径
+  String _defaultOutputPath(List<BaseSource> sources) {
+    final first = sources.first.input;
+    final dir = p.dirname(first);
+    final name = p.basenameWithoutExtension(first);
+    return p.join(dir, '${name}_transcoded.mp4');
+  }
+
   /// 初始化数据并开始转码
   Future<void> _initAndStart() async {
     try {
-      _mediaInfo = await ref.read(mediaInfoProvider(widget.filePath).future);
-      // 解析总时长用于计算进度
-      final seconds = double.tryParse(_mediaInfo!.duration) ?? 0.0;
-      _totalDurationMs = seconds * 1000;
-      // 开始转码
+      final infos = await Future.wait(
+        widget.sources.map(
+          (source) => ref.read(mediaInfoProvider(source.input).future),
+        ),
+      );
+
+      // 多路输入时以最长的那一路作为进度基准
+      _totalDurationMs = infos
+          .map((info) => (double.tryParse(info.duration) ?? 0.0) * 1000)
+          .fold<double>(0.0, (a, b) => a > b ? a : b);
+
       await _startTranscoding();
     } catch (e) {
       if (mounted) {
@@ -63,11 +78,24 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     }
   }
 
+  /// 执行转码
   Future<void> _startTranscoding() async {
     final configs = ref.read(fastTranscodeProvider).streamConfigs; // 流配置
-    final streams = _mediaInfo!.streams; // 源媒体流
 
-    final args = FfmpegArgsBuilder.build(configs, streams); // 构建 FFmpeg 参数
+    if (!configs.any((config) => config.enabled)) {
+      setState(() {
+        _status = TranscodeStatus.failed;
+        _errorLog = '没有启用任何流，请至少保留一路视频或音频。';
+      });
+      return;
+    }
+
+    final command = FfmpegArgsBuilder.buildCommand(
+      sources: widget.sources,
+      configs: configs,
+      outputPath: _outputPath,
+    );
+    debugPrint('FFmpeg Command: $command');
 
     // 监听进度
     FFmpegKitConfig.enableStatisticsCallback((stats) {
@@ -79,11 +107,6 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
         }
       }
     });
-
-    // 组装完整命令
-    final command =
-        '-y -i "${widget.filePath}" ${args.join(' ')} "$_outputPath"';
-    debugPrint('FFmpeg Command: $command');
 
     // 执行命令
     final session = await FFmpegKit.execute(command);
@@ -119,8 +142,8 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   Widget _buildRunning() {
     return Column(
-      key: ValueKey('running'),
-      mainAxisAlignment: MainAxisAlignment.center,
+      key: const ValueKey('running'),
+      mainAxisAlignment: .center,
       children: [
         const CircularProgressIndicator(),
         const SizedBox(height: 24),
@@ -141,8 +164,8 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   Widget _buildSuccess() {
     return Column(
-      key: ValueKey('success'),
-      mainAxisAlignment: MainAxisAlignment.center,
+      key: const ValueKey('success'),
+      mainAxisAlignment: .center,
       children: [
         const Icon(Icons.check_circle_outline, color: Colors.green, size: 80),
         const SizedBox(height: 24),
@@ -154,7 +177,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
         Text(_outputPath, style: const TextStyle(color: Colors.grey)),
         const SizedBox(height: 32),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: .center,
           children: [
             OutlinedButton.icon(
               onPressed: () async {
@@ -181,8 +204,8 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   Widget _buildFailed() {
     return Column(
-      key: ValueKey('failed'),
-      mainAxisAlignment: MainAxisAlignment.center,
+      key: const ValueKey('failed'),
+      mainAxisAlignment: .center,
       children: [
         const Icon(Icons.error_outline, color: Colors.red, size: 80),
         const SizedBox(height: 24),
@@ -209,7 +232,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
         ),
         const SizedBox(height: 24),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: .center,
           children: [
             OutlinedButton(
               onPressed: () => ref.read(fastTranscodeProvider.notifier).reset(),

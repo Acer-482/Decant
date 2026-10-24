@@ -34,10 +34,10 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
 
   @override
   void initFormWidgets(MediaTranscodeTask? initialTask) {
-    /// 为本地媒体文件资源
-    if (initialTask?.source is FileSource) {
-      final localMediaFileSource = initialTask!.source as FileSource;
-      _mediaPath = localMediaFileSource.path;
+    /// 回填首个输入源
+    if (initialTask != null && initialTask.sources.isNotEmpty) {
+      final first = initialTask.sources.first;
+      if (first is FileSource) _mediaPath = first.path;
     }
   }
 
@@ -55,7 +55,6 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
               label: Text('选择文件'),
             ),
           ),
-          // if (_mediaPath != null) MediaInfoCard(path: _mediaPath!),
         ],
       ),
     ];
@@ -75,7 +74,7 @@ class MediaTaskFormPageState extends BaseTaskFormPageState<MediaTranscodeTask> {
       notes: notes,
       state: state,
       createdStamp: createdStamp,
-      source: FileSource(path: _mediaPath ?? ''),
+      sources: [FileSource(path: _mediaPath ?? '')],
       streamConfigs: [],
       outputPath: 'output.mp4',
     );

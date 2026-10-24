@@ -10,4 +10,7 @@ class FileSource extends BaseSource with FileSourceMappable {
   final String path;
 
   const FileSource({required this.path});
+
+  @override
+  String get input => path;
 }

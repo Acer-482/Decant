@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 
 /// 选择文件页面
@@ -28,9 +29,14 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
     );
   }
 
-  /// 设置选中文件
-  void _setSelectedFile(String path) {
-    ref.read(fastTranscodeProvider.notifier).selectFile(path);
+  /// 设置选中的文件
+  void _setSelectedFiles(List<String> paths) {
+    if (paths.isEmpty) return;
+    final notifier = ref.read(fastTranscodeProvider.notifier);
+    notifier.selectSource(FileSource(path: paths.first));
+    for (final path in paths.skip(1)) {
+      notifier.addSource(FileSource(path: path));
+    }
   }
 
   /// 选择文件
@@ -41,13 +47,13 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
     );
     if (pickedFile?.path == null) return; // 未选择文件
     // 选择成功 //
-    _setSelectedFile(pickedFile!.path!);
+    _setSelectedFiles([pickedFile!.path!]);
   }
 
   /// 处理拖入文件
   void _handleDrop(List<DropItem> files) {
     if (files.isEmpty) return;
-    _setSelectedFile(files.first.path);
+    _setSelectedFiles(files.map((f) => f.path).toList());
   }
 
   /// 构建选择文件区域

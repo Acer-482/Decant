@@ -11,6 +11,8 @@ class AudioStreamConfig extends StreamConfig with AudioStreamConfigMappable {
   final AudioEncoder encoder;
 
   const AudioStreamConfig({
+    required super.inputIndex,
+    required super.streamIndex,
     super.copyMode,
     super.enabled,
     required this.encoder,

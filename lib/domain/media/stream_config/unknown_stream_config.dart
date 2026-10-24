@@ -8,6 +8,8 @@ part 'unknown_stream_config.mapper.dart';
 class UnknownStreamConfig extends StreamConfig
     with UnknownStreamConfigMappable {
   const UnknownStreamConfig({
+    required super.inputIndex,
+    required super.streamIndex,
     super.copyMode,
     super.enabled = false, // 未知流默认禁用
   });
