@@ -14,30 +14,34 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
   @override
   FastTranscodeState build() => const FastTranscodeState();
 
-  /// 选择首个源，直接进入配置页
-  void selectSource(BaseSource source) {
-    state = state.copyWith(step: .configureTranscodeOptions, sources: [source]);
-  }
-
-  /// 追加一个源（多路输入）
-  void addSource(BaseSource source) {
-    state = state.copyWith(sources: [...state.sources, source]);
-  }
-
-  /// 移除指定下标的源
+  /// 追加输入源
   ///
-  /// 移除最后一个源时回到选择文件步骤
+  /// 按 input 去重
+  void addSources(List<BaseSource> sources) {
+    final next = [...state.sources];
+    for (final source in sources) {
+      if (next.any((existing) => existing.input == source.input)) continue;
+      next.add(source);
+    }
+    if (next.length == state.sources.length) return;
+    state = state.copyWith(sources: next);
+  }
+
+  /// 移除输入源
   void removeSourceAt(int index) {
     if (index < 0 || index >= state.sources.length) return;
     final next = [...state.sources]..removeAt(index);
-    state = next.isEmpty
-        ? const FastTranscodeState()
-        : state.copyWith(sources: next);
+    state = state.copyWith(sources: next);
   }
 
   /// 重置
   void reset() {
     state = const FastTranscodeState(); // 回到第一步
+  }
+
+  /// 进入配置步骤
+  void startConfigOptions() {
+    state = state.copyWith(step: .configureTranscodeOptions);
   }
 
   /// 开始转码
