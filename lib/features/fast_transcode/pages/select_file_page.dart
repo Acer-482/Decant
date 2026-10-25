@@ -15,8 +15,6 @@ import 'package:decant/shared/utils/file_utils.dart';
 import 'package:decant/shared/utils/media_format_utils.dart';
 
 /// 选择文件页面
-///
-/// 第一步展示各输入的媒体摘要，可一次拖入多个文件
 class SelectFilePage extends ConsumerStatefulWidget {
   const SelectFilePage({super.key});
 
@@ -49,76 +47,89 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
         child: Column(
           spacing: 10,
           children: [
-            Expanded(
-              child: sources.isEmpty
-                  ? _buildEmptyArea()
-                  : _buildSourceList(sources, infos),
-            ),
+            Expanded(child: _buildFrame(sources, infos)),
+            // 没有文件时不显示
             if (sources.isNotEmpty)
-              Align(
-                alignment: .centerLeft,
-                child: TextButton.icon(
-                  onPressed: _pickFile,
-                  icon: const Icon(Icons.add),
-                  label: const Text('添加文件'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: ready
+                      ? () => ref
+                            .read(fastTranscodeProvider.notifier)
+                            .startConfigOptions()
+                      : null, // 未就绪时置灰
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('下一步：配置转码'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
                 ),
               ),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: ready
-                    ? () => ref
-                          .read(fastTranscodeProvider.notifier)
-                          .startConfigOptions()
-                    : null,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('下一步：配置转码'),
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  /// 空状态区域
-  Widget _buildEmptyArea() {
+  /// 文件列表 + 拖入区域
+  Widget _buildFrame(
+    List<BaseSource> sources,
+    List<AsyncValue<MediaInfo>> infos,
+  ) {
+    final theme = Theme.of(context);
+    return AnimatedContainer(
+      duration: 120.ms,
+      clipBehavior: .antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: .all(.circular(6)),
+        border: Border.all(
+          color: _dragging
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outline, // 边框色
+          width: _dragging ? 2 : 1.5, // 边框粗细
+        ),
+      ),
+      child: Column(
+        children: [
+          // 文件列表在上
+          if (sources.isNotEmpty) ...[
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 240),
+              child: _buildSourceList(sources, infos),
+            ),
+            const Divider(height: 1),
+          ],
+          // 拖入区域在下
+          Expanded(child: _buildDropZone()),
+        ],
+      ),
+    );
+  }
+
+  /// 拖入区域
+  Widget _buildDropZone() {
     final theme = Theme.of(context);
     return GestureDetector(
+      behavior: .opaque,
       onTap: _pickFile,
-      child: AnimatedContainer(
-        duration: 120.ms,
-        decoration: BoxDecoration(
-          borderRadius: .all(.circular(5)),
-          border: Border.all(
-            color: _dragging
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outline, // 边框色
-            width: _dragging ? 2 : 1.5, // 边框粗细
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: .center,
-            spacing: 8,
-            children: [
-              AnimatedSwitcher(
-                duration: 100.ms,
-                child: _dragging
-                    ? _dragTip('dragging', Icons.file_download, '松开以添加文件')
-                    : _dragTip('idle', Icons.add, '拖入或点击选择文件'),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: .center,
+          spacing: 8,
+          children: [
+            AnimatedSwitcher(
+              duration: 100.ms,
+              child: _dragging
+                  ? _dragTip('dragging', Icons.file_download, '松开以添加文件')
+                  : _dragTip('idle', Icons.add, '拖入或点击选择文件'),
+            ),
+            Text(
+              '可以一次拖入多个文件，把它们的流合并到一个输出',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
               ),
-              Text(
-                '可以一次拖入多个文件，把它们的流合并到一个输出',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -129,14 +140,13 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
     List<BaseSource> sources,
     List<AsyncValue<MediaInfo>> infos,
   ) {
-    return Card(
-      clipBehavior: .antiAlias,
-      child: ListView.separated(
-        itemCount: sources.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, index) =>
-            _buildSourceRow(context, sources[index], infos[index], index),
-      ),
+    return ListView.separated(
+      shrinkWrap: true, // 按内容高度
+      padding: EdgeInsets.zero,
+      itemCount: sources.length,
+      separatorBuilder: (_, _) => const Divider(height: 1),
+      itemBuilder: (context, index) =>
+          _buildSourceRow(context, sources[index], infos[index], index),
     );
   }
 
