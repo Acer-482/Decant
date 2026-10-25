@@ -1,6 +1,7 @@
+import 'package:decant/features/task_list/pages/task_list_page.dart';
+import 'package:decant/features/welcome/pages/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:decant/features/fast_transcode/pages/fast_transcode_page.dart';
-import 'package:decant/features/task_list/pages/task_list_page.dart';
 
 /// 导航项
 class _NavigationItem {
@@ -26,10 +27,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<_NavigationItem> _navigationItems = [
+  late final List<_NavigationItem> _navigationItems = [
     _NavigationItem(
-      icon: const Icon(Icons.home),
+      icon: const Icon(Icons.home_outlined),
       name: '主页',
+      page: WelcomePage(onStart: () => _animatedToPage(1)),
+    ),
+    _NavigationItem(
+      icon: const Icon(Icons.bolt_outlined),
+      name: '快速转码',
+      description: '对文件进行快速转码',
       page: const FastTranscodePage(),
     ),
     _NavigationItem(
@@ -38,7 +45,11 @@ class _HomePageState extends State<HomePage> {
       description: '查看正在进行的任务',
       page: const TaskListPage(),
     ),
-    _NavigationItem(icon: const Icon(Icons.settings), name: '设置'),
+    _NavigationItem(
+      icon: const Icon(Icons.settings_outlined),
+      description: '配置首选项',
+      name: '设置',
+    ),
   ]; // 导航项
 
   final PageController _pageController = PageController(); // 页面控制器
@@ -48,8 +59,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: theme.colorScheme.primary, // 选中色
+        unselectedItemColor: theme.colorScheme.onSurfaceVariant, // 未选中色
         currentIndex: _pageIndex,
         onTap: _animatedToPage,
         items: _navigationItems
