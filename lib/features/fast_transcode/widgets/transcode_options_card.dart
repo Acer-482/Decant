@@ -117,11 +117,7 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.save_alt, size: 18),
             title: const Text('输出文件'),
-            subtitle: Text(
-              widget.outputPath,
-              maxLines: 1,
-              overflow: .ellipsis,
-            ),
+            subtitle: Text(widget.outputPath, maxLines: 1, overflow: .ellipsis),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -186,21 +182,22 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     } else if (stream is AudioStreamInfo) {
       title = '音频流 #${stream.index}';
     } else {
-      return SwitchListTile(
+      return ListTile(
         title: Text(title),
         subtitle: const Text('当前不支持的流类型'),
-        value: config.enabled,
-        onChanged: (val) => _updateConfig(index, config.copyWith(enabled: val)),
+        enabled: false,
       );
     }
 
     return ExpansionTile(
-      title: Text(title),
+      title: Text(title), // 标题
       subtitle: Text(
-        !config.enabled
-            ? '已禁用'
-            : (config.copyMode ? '复制原流' : '重新编码'),
+        !config.enabled ? '已禁用' : (config.copyMode ? '复制原流' : '重新编码'),
       ),
+      shape: RoundedRectangleBorder(borderRadius: .circular(12)), // 展开形状
+      collapsedShape: RoundedRectangleBorder(
+        borderRadius: .circular(12),
+      ), // 收起形状
       childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       children: [
         // 是否启用
