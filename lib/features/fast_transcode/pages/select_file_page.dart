@@ -3,16 +3,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:decant/domain/media/media_info.dart';
-import 'package:decant/domain/media/stream_info/video_stream_info.dart';
 import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:decant/features/fast_transcode/widgets/file_info_card.dart';
-import 'package:decant/features/fast_transcode/widgets/media_info_card.dart';
-import 'package:decant/shared/utils/file_utils.dart';
-import 'package:decant/shared/utils/media_format_utils.dart';
+import 'package:decant/features/fast_transcode/widgets/source_row.dart';
 
 /// 选择文件页面
 class SelectFilePage extends ConsumerStatefulWidget {
@@ -25,6 +20,9 @@ class SelectFilePage extends ConsumerStatefulWidget {
 class _SelectFilePageState extends ConsumerState<SelectFilePage> {
   // 正在拖拽文件
   bool _dragging = false;
+
+  // 已经播放过入场动画的文件
+  final Set<String> _seen = {};
 
   @override
   Widget build(BuildContext context) {
@@ -47,24 +45,23 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
         child: Column(
           spacing: 10,
           children: [
-            Expanded(child: _buildFrame(sources, infos)),
+            Expanded(child: _buildFrame(sources)),
             // 没有文件时不显示
-            if (sources.isNotEmpty)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: ready
-                      ? () => ref
-                            .read(fastTranscodeProvider.notifier)
-                            .startConfigOptions()
-                      : null, // 未就绪时置灰
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('下一步：配置转码'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: sources.isNotEmpty && ready
+                    ? () => ref
+                          .read(fastTranscodeProvider.notifier)
+                          .startConfigOptions()
+                    : null, // 未就绪时置灰
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('下一步：配置转码'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -72,10 +69,7 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
   }
 
   /// 文件列表 + 拖入区域
-  Widget _buildFrame(
-    List<BaseSource> sources,
-    List<AsyncValue<MediaInfo>> infos,
-  ) {
+  Widget _buildFrame(List<BaseSource> sources) {
     final theme = Theme.of(context);
     return AnimatedContainer(
       duration: 120.ms,
@@ -95,7 +89,7 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
           if (sources.isNotEmpty) ...[
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 240),
-              child: _buildSourceList(sources, infos),
+              child: _buildSourceList(sources),
             ),
             const Divider(height: 1),
           ],
@@ -136,77 +130,28 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
   }
 
   /// 文件列表
-  Widget _buildSourceList(
-    List<BaseSource> sources,
-    List<AsyncValue<MediaInfo>> infos,
-  ) {
-    return ListView.separated(
+  Widget _buildSourceList(List<BaseSource> sources) {
+    return ListView.builder(
       shrinkWrap: true, // 按内容高度
       padding: EdgeInsets.zero,
       itemCount: sources.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, index) =>
-          _buildSourceRow(context, sources[index], infos[index], index),
+      // 删除/插入后按下标复用会重建整行，这里按 key 找回原位置以保留 State
+      findChildIndexCallback: (key) {
+        if (key is! ValueKey<String>) return null;
+        final index = sources.indexWhere((source) => source.input == key.value);
+        return index < 0 ? null : index;
+      },
+      itemBuilder: (context, index) {
+        final source = sources[index];
+        return SourceRow(
+          key: ValueKey(source.input),
+          source: source,
+          number: index + 1,
+          highlight: _seen.add(source.input), // 第一次出现时播放高亮
+          showDivider: index < sources.length - 1,
+        );
+      },
     );
-  }
-
-  /// 文件行
-  Widget _buildSourceRow(
-    BuildContext context,
-    BaseSource source,
-    AsyncValue<MediaInfo> info,
-    int index,
-  ) {
-    final name = source is FileSource
-        ? FileUtils.fileName(source.path)
-        : source.input;
-
-    return ListTile(
-      dense: true,
-      leading: CircleAvatar(radius: 12, child: Text('${index + 1}')),
-      title: Text(name, maxLines: 1, overflow: .ellipsis),
-      subtitle: Text(_summary(info)),
-      trailing: Row(
-        mainAxisSize: .min,
-        children: [
-          IconButton(
-            visualDensity: .compact,
-            tooltip: '查看详情',
-            onPressed: () => _showDetails(context, source, info),
-            icon: const Icon(Icons.info_outline, size: 18),
-          ),
-          IconButton(
-            visualDensity: .compact,
-            tooltip: '移除',
-            onPressed: () =>
-                ref.read(fastTranscodeProvider.notifier).removeSourceAt(index),
-            icon: const Icon(Icons.close, size: 18),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 文件摘要
-  String _summary(AsyncValue<MediaInfo> info) {
-    if (info.isLoading) return '解析中…';
-    if (!info.hasValue) return '解析失败，点击右侧详情查看原因';
-
-    final media = info.requireValue;
-    VideoStreamInfo? video;
-    for (final stream in media.streams) {
-      if (stream is VideoStreamInfo) {
-        video = stream;
-        break;
-      }
-    }
-
-    final parts = <String>[
-      MediaFormatUtils.duration(media.duration),
-      if (video != null) '${video.width}×${video.height}',
-      '${media.streams.length} 条流',
-    ];
-    return parts.join(' · ');
   }
 
   /// 追加文件
@@ -230,43 +175,6 @@ class _SelectFilePageState extends ConsumerState<SelectFilePage> {
       for (final file in pickedFiles)
         if (file.path != null) file.path!,
     ]);
-  }
-
-  /// 查看详情
-  void _showDetails(
-    BuildContext context,
-    BaseSource source,
-    AsyncValue<MediaInfo> info,
-  ) {
-    final title = source is FileSource
-        ? FileUtils.fileName(source.path)
-        : '媒体信息';
-
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        content: SizedBox(
-          width: 480,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: .min,
-              spacing: 8,
-              children: [
-                if (source is FileSource) FileInfoCard(path: source.path),
-                if (info.hasValue) MediaInfoCard(info: info.requireValue),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('关闭'),
-          ),
-        ],
-      ),
-    );
   }
 
   /// 拖入提示

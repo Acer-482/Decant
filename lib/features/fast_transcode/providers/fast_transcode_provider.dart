@@ -28,9 +28,11 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
   }
 
   /// 移除输入源
-  void removeSourceAt(int index) {
-    if (index < 0 || index >= state.sources.length) return;
-    final next = [...state.sources]..removeAt(index);
+  void removeSource(String input) {
+    final next = state.sources
+        .where((source) => source.input != input)
+        .toList();
+    if (next.length == state.sources.length) return;
     state = state.copyWith(sources: next);
   }
 
