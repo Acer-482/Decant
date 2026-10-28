@@ -18,6 +18,7 @@ dependencies:
   uuid: ^4.6.0 # UUID 生成
   flutter_animate: ^4.5.2 # 动画
   file_picker: ^13.1.0 # 文件选择
+  file_selector: ^1.1.0 # 保存/目录选择
   desktop_drop: ^0.8.4 # 文件拖拽
   url_launcher: ^6.3.3 # URL 跳转/启动
 
