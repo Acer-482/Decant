@@ -50,9 +50,14 @@ class TranscodeOptionsPage extends ConsumerWidget {
         MediaInput(source: sources[i], info: infos[i].requireValue),
     ];
 
-    return Container(
-      padding: .all(10),
-      child: SingleChildScrollView(child: TranscodeOptionsCard(inputs: inputs)),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720), // 宽屏下保持可读宽度
+          child: TranscodeOptionsCard(inputs: inputs),
+        ),
+      ),
     );
   }
 }
