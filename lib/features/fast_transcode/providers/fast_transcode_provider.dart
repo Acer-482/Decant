@@ -28,12 +28,17 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
   }
 
   /// 移除输入源
+  ///
+  /// 按 input 定位，避免删除动画期间下标错位
   void removeSource(String input) {
-    final next = state.sources
-        .where((source) => source.input != input)
-        .toList();
+    final next = state.sources.where((source) => source.input != input).toList();
     if (next.length == state.sources.length) return;
     state = state.copyWith(sources: next);
+  }
+
+  /// 设置输出目录
+  void setOutputDir(String? dir) {
+    state = state.copyWith(outputDir: dir);
   }
 
   /// 重置

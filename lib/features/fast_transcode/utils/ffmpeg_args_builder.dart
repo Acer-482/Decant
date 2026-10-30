@@ -1,8 +1,31 @@
+import 'package:path/path.dart' as p;
 import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
 import 'package:decant/domain/media/stream_config/stream_config.dart';
 import 'package:decant/domain/media/stream_config/unknown_stream_config.dart';
 import 'package:decant/domain/media/stream_config/video_stream_config.dart';
 import 'package:decant/domain/source/base_source.dart';
+
+/// 一个输出文件
+class FfmpegOutput {
+  /// 文件路径
+  final String path;
+
+  /// 是否为主输出
+  final bool main;
+
+  const FfmpegOutput(this.path, {this.main = false});
+}
+
+/// 一条完整的 FFmpeg 命令
+class FfmpegCommand {
+  /// 命令字符串
+  final String command;
+
+  /// 会产出的文件
+  final List<FfmpegOutput> outputs;
+
+  const FfmpegCommand(this.command, this.outputs);
+}
 
 /// FFmpeg 参数构建
 class FfmpegArgsBuilder {
@@ -40,24 +63,82 @@ class FfmpegArgsBuilder {
     return args;
   }
 
+  /// 单条独立输出的路径
+  ///
+  /// 有自定义路径时直接用，否则按输出目录 + 默认命名
+  static String outputPathFor(
+    StreamConfig config, {
+    required String outputDir,
+    required String baseName,
+  }) {
+    final custom = config.outputPath;
+    if (custom != null && custom.isNotEmpty) return custom;
+
+    if (config is VideoStreamConfig) {
+      return p.join(outputDir, '${baseName}_video.mp4');
+    }
+    if (config is AudioStreamConfig) {
+      return p.join(outputDir, '${baseName}_audio.${_audioExtension(config)}');
+    }
+    return p.join(outputDir, '${baseName}_stream${config.streamIndex}.mkv');
+  }
+
   /// 组装完整的 FFmpeg 命令
   ///
-  /// 形如：`-y -i "a.mp4" -i "b.mkv" -map 0:0 -c:v copy -map 1:1 -c:a aac "out.mp4"`
-  static String buildCommand({
+  /// 勾选「单独输出」的流按最终路径分组：路径相同的流会写进同一个文件，
+  /// 路径不同的各写各的，一条命令里用多个 `-map ... <path>` 完成。
+  static FfmpegCommand buildCommand({
     required List<BaseSource> sources,
     required List<StreamConfig> configs,
-    required String outputPath,
+    required String outputDir,
+    required String baseName,
   }) {
+    final enabled = configs.where((config) => config.enabled).toList();
+
+    final mainConfigs = enabled
+        .where((config) => !config.separateOutput)
+        .toList();
+
+    final groups = <String, List<StreamConfig>>{};
+    for (final config in enabled.where((c) => c.separateOutput)) {
+      final path = outputPathFor(
+        config,
+        outputDir: outputDir,
+        baseName: baseName,
+      );
+      groups.putIfAbsent(path, () => []).add(config);
+    }
+
+    final outputs = <FfmpegOutput>[];
     final buffer = StringBuffer('-y');
+
     for (final source in sources) {
       buffer.write(' -i ${_quote(source.input)}');
     }
 
-    final args = build(configs);
-    if (args.isNotEmpty) buffer.write(' ${args.join(' ')}');
+    void addOutput(List<StreamConfig> group, String path) {
+      if (group.isEmpty) return;
 
-    buffer.write(' ${_quote(outputPath)}');
-    return buffer.toString();
+      buffer.write(' ${build(group).join(' ')} ${_quote(path)}');
+      outputs.add(FfmpegOutput(path, main: outputs.isEmpty));
+    }
+
+    addOutput(mainConfigs, p.join(outputDir, '$baseName.mp4'));
+    for (final entry in groups.entries) {
+      addOutput(entry.value, entry.key);
+    }
+
+    return FfmpegCommand(buffer.toString(), outputs);
+  }
+
+  /// 音频单独输出时的扩展名
+  static String _audioExtension(AudioStreamConfig config) {
+    if (!config.copyMode) {
+      final name = config.encoder.ffmpegName;
+      if (name == 'libmp3lame') return 'mp3';
+      if (name == 'flac') return 'flac';
+    }
+    return 'm4a'; // aac 及复制流
   }
 
   /// 为路径加上引号并转义，避免空格、中文、引号破坏命令

@@ -1,12 +1,16 @@
 import 'package:path/path.dart' as p;
 import 'package:decant/domain/source/base_source.dart';
 
-/// 默认输出路径
+/// 默认输出目录
 ///
-/// 与第一个输入同目录，文件名加 `_transcoded` 后缀。
-String defaultOutputPath(List<BaseSource> sources) {
-  final first = sources.first.input;
-  final dir = p.dirname(first);
-  final name = p.basenameWithoutExtension(first);
-  return p.join(dir, '${name}_transcoded.mp4');
+/// 第一个源所在目录
+String defaultOutputDir(List<BaseSource> sources) {
+  return p.dirname(sources.first.input);
+}
+
+/// 默认输出基础名
+///
+/// 第一个源的文件名，不含后缀
+String defaultBaseName(List<BaseSource> sources) {
+  return p.basenameWithoutExtension(sources.first.input);
 }

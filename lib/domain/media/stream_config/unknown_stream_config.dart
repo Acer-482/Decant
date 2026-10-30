@@ -12,5 +12,7 @@ class UnknownStreamConfig extends StreamConfig
     required super.streamIndex,
     super.copyMode,
     super.enabled = false, // 未知流默认禁用
+    super.separateOutput,
+    super.outputPath,
   });
 }

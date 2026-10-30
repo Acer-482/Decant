@@ -30,15 +30,20 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   TranscodeStatus _status = TranscodeStatus.running;
   double _progress = 0.0;
   String? _errorLog;
-  late String _outputPath;
   double _totalDurationMs = 0.0;
+
+  late final String _outputDir; // 输出目录
+  late final String _baseName; // 输出基础名
+  List<FfmpegOutput> _outputs = const []; // 产物列表
 
   @override
   void initState() {
     super.initState();
 
-    // 输出路径与配置页保持一致
-    _outputPath = defaultOutputPath(widget.sources);
+    // 与配置页保持一致
+    final state = ref.read(fastTranscodeProvider);
+    _outputDir = state.outputDir ?? defaultOutputDir(widget.sources);
+    _baseName = defaultBaseName(widget.sources);
 
     // 延迟一帧执行，先让 UI 渲染出 Loading 状态
     Future.microtask(() => _initAndStart());
@@ -84,9 +89,20 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     final command = FfmpegArgsBuilder.buildCommand(
       sources: widget.sources,
       configs: configs,
-      outputPath: _outputPath,
+      outputDir: _outputDir,
+      baseName: _baseName,
     );
-    debugPrint('FFmpeg Command: $command');
+
+    if (command.outputs.isEmpty) {
+      setState(() {
+        _status = TranscodeStatus.failed;
+        _errorLog = '没有需要输出的文件。';
+      });
+      return;
+    }
+
+    _outputs = command.outputs;
+    debugPrint('FFmpeg Command: ${command.command}');
 
     // 监听进度
     FFmpegKitConfig.enableStatisticsCallback((stats) {
@@ -100,7 +116,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     });
 
     // 执行命令
-    final session = await FFmpegKit.execute(command);
+    final session = await FFmpegKit.execute(command.command);
     final returnCode = await session.getReturnCode();
 
     // 处理结果
@@ -154,6 +170,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   }
 
   Widget _buildSuccess() {
+    final theme = Theme.of(context);
     return Column(
       key: const ValueKey('success'),
       mainAxisAlignment: .center,
@@ -164,15 +181,22 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
           '转码成功！',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 8),
-        Text(_outputPath, style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 32),
+        const SizedBox(height: 12),
+        // 产物列表
+        for (final output in _outputs)
+          Text(
+            p.basename(output.path),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        const SizedBox(height: 24),
         Row(
           mainAxisAlignment: .center,
           children: [
             OutlinedButton.icon(
               onPressed: () async {
-                final uri = Uri.file(p.dirname(_outputPath));
+                final uri = Uri.file(_outputDir);
                 if (await canLaunchUrl(uri)) await launchUrl(uri);
               },
               icon: const Icon(Icons.folder_open),

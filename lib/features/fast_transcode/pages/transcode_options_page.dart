@@ -3,12 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:decant/domain/media/media_input.dart';
 import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:decant/features/fast_transcode/utils/output_path.dart';
 import 'package:decant/features/fast_transcode/widgets/transcode_options_card.dart';
 
 /// 转码选项页面
-///
-/// 输入源已确定，这里只配置每条流的输出
 class TranscodeOptionsPage extends ConsumerWidget {
   /// 输入源
   final List<BaseSource> sources;
@@ -55,12 +52,7 @@ class TranscodeOptionsPage extends ConsumerWidget {
 
     return Container(
       padding: .all(10),
-      child: SingleChildScrollView(
-        child: TranscodeOptionsCard(
-          inputs: inputs,
-          outputPath: defaultOutputPath(sources),
-        ),
-      ),
+      child: SingleChildScrollView(child: TranscodeOptionsCard(inputs: inputs)),
     );
   }
 }

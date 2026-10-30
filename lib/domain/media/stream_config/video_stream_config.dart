@@ -15,6 +15,8 @@ class VideoStreamConfig extends StreamConfig with VideoStreamConfigMappable {
     required super.streamIndex,
     super.copyMode,
     super.enabled,
+    super.separateOutput,
+    super.outputPath,
     required this.encoder,
   });
 }

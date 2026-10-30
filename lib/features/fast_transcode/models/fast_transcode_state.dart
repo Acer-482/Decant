@@ -17,10 +17,16 @@ class FastTranscodeState with FastTranscodeStateMappable {
   /// 转码配置
   final List<StreamConfig> streamConfigs;
 
+  /// 输出目录
+  ///
+  /// 为空时使用第一个源所在目录
+  final String? outputDir;
+
   const FastTranscodeState({
     this.step = .selectFile,
     this.sources = const [],
     this.streamConfigs = const [],
+    this.outputDir,
   });
 
   /// 是否至少有一个输入源

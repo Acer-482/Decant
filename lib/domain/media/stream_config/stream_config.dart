@@ -22,11 +22,21 @@ abstract class StreamConfig with StreamConfigMappable {
   /// 是否启用
   final bool enabled;
 
+  /// 是否输出到独立文件
+  final bool separateOutput;
+
+  /// 独立输出的自定义路径
+  ///
+  /// 为空时按输出目录 + 默认命名生成
+  final String? outputPath;
+
   const StreamConfig({
     required this.inputIndex,
     required this.streamIndex,
     this.copyMode = true,
     this.enabled = true,
+    this.separateOutput = false,
+    this.outputPath,
   });
 
   /// FFmpeg 的流标识，例如 `0:1` 表示第 0 路输入的第 1 条流

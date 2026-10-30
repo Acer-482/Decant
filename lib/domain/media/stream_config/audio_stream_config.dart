@@ -15,6 +15,8 @@ class AudioStreamConfig extends StreamConfig with AudioStreamConfigMappable {
     required super.streamIndex,
     super.copyMode,
     super.enabled,
+    super.separateOutput,
+    super.outputPath,
     required this.encoder,
   });
 }

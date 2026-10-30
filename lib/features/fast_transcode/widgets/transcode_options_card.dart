@@ -1,5 +1,7 @@
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:decant/domain/encoder/audio_encoder.dart';
 import 'package:decant/domain/encoder/video_encoder.dart';
 import 'package:decant/domain/media/media_input.dart';
@@ -12,6 +14,8 @@ import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 import 'package:decant/domain/media/stream_info/video_stream_info.dart';
 import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
+import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
+import 'package:decant/features/fast_transcode/utils/output_path.dart';
 import 'package:decant/shared/utils/file_utils.dart';
 import 'package:decant/shared/widgets/title_card.dart';
 
@@ -22,14 +26,7 @@ class TranscodeOptionsCard extends ConsumerStatefulWidget {
   /// 输入媒体
   final List<MediaInput> inputs;
 
-  /// 输出路径
-  final String outputPath;
-
-  const TranscodeOptionsCard({
-    super.key,
-    required this.inputs,
-    required this.outputPath,
-  });
+  const TranscodeOptionsCard({super.key, required this.inputs});
 
   @override
   ConsumerState<TranscodeOptionsCard> createState() =>
@@ -91,6 +88,33 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     });
   }
 
+  /// 选择输出目录
+  Future<void> _selectOutputDir() async {
+    final dir = await getDirectoryPath();
+    if (dir == null) return; // 用户取消
+    ref.read(fastTranscodeProvider.notifier).setOutputDir(dir);
+  }
+
+  /// 选择某条流的输出路径
+  Future<void> _pickStreamOutput(int index, StreamConfig config) async {
+    final sources = [for (final input in widget.inputs) input.source];
+    final state = ref.read(fastTranscodeProvider);
+    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final baseName = defaultBaseName(sources);
+
+    final suggested = FfmpegArgsBuilder.outputPathFor(
+      config,
+      outputDir: outputDir,
+      baseName: baseName,
+    );
+
+    final location = await getSaveLocation(
+      suggestedName: p.basename(suggested),
+    );
+    if (location == null) return; // 用户取消
+    _updateConfig(index, config.copyWith(outputPath: location.path));
+  }
+
   /// 输入显示名
   String _inputLabel(int index) {
     final source = widget.inputs[index].source;
@@ -100,7 +124,13 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final sources = [for (final input in widget.inputs) input.source];
+    final state = ref.watch(fastTranscodeProvider);
+    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final baseName = defaultBaseName(sources);
     final hasEnabled = _entries.any((entry) => entry.config.enabled);
+
     return TitleCard(
       icon: const Icon(Icons.movie),
       title: const Text('转码设置'),
@@ -112,14 +142,25 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
               if (_entries[i].config.inputIndex == input) _buildStreamTile(i),
           ],
           const Divider(height: 24),
+          // 输出目录
           ListTile(
             dense: true,
+            onTap: _selectOutputDir,
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.save_alt, size: 18),
-            title: const Text('输出文件'),
-            subtitle: Text(widget.outputPath, maxLines: 1, overflow: .ellipsis),
+            leading: const Icon(Icons.folder_outlined, size: 18),
+            title: const Text('输出目录'),
+            subtitle: Text(outputDir, maxLines: 1, overflow: .ellipsis),
+            trailing: const Text('更改'),
           ),
-          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 26, bottom: 8),
+            child: Text(
+              '主文件 $baseName.mp4；勾选「单独输出」的流会生成 _video / _audio 文件',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          ),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -192,7 +233,9 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     return ExpansionTile(
       title: Text(title), // 标题
       subtitle: Text(
-        !config.enabled ? '已禁用' : (config.copyMode ? '复制原流' : '重新编码'),
+        !config.enabled
+            ? '已禁用'
+            : "${config.copyMode ? '复制原流' : '重新编码'}${config.separateOutput ? ' | 单独输出' : ''}",
       ),
       shape: RoundedRectangleBorder(borderRadius: .circular(12)), // 展开形状
       collapsedShape: RoundedRectangleBorder(
@@ -217,8 +260,55 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
                 _updateConfig(index, config.copyWith(copyMode: val)),
           ),
           if (!config.copyMode) _buildEncoderSelector(index, stream, config),
+          SwitchListTile(
+            title: const Text('单独输出'),
+            subtitle: const Text('这条流写入独立文件'),
+            value: config.separateOutput,
+            onChanged: (val) =>
+                _updateConfig(index, config.copyWith(separateOutput: val)),
+          ),
+          if (config.separateOutput) _buildOutputPathTile(index, config),
         ],
       ],
+    );
+  }
+
+  /// 单独输出的路径选择
+  Widget _buildOutputPathTile(int index, StreamConfig config) {
+    final sources = [for (final input in widget.inputs) input.source];
+    final state = ref.watch(fastTranscodeProvider);
+    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final baseName = defaultBaseName(sources);
+
+    final path = FfmpegArgsBuilder.outputPathFor(
+      config,
+      outputDir: outputDir,
+      baseName: baseName,
+    );
+    final custom = config.outputPath != null && config.outputPath!.isNotEmpty;
+
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      title: const Text('输出路径'),
+      subtitle: Text(path, maxLines: 1, overflow: .ellipsis),
+      trailing: Row(
+        mainAxisSize: .min,
+        children: [
+          if (custom)
+            IconButton(
+              visualDensity: .compact,
+              tooltip: '恢复默认',
+              onPressed: () =>
+                  _updateConfig(index, config.copyWith(outputPath: '')),
+              icon: const Icon(Icons.restart_alt, size: 18),
+            ),
+          TextButton(
+            onPressed: () => _pickStreamOutput(index, config),
+            child: const Text('更改'),
+          ),
+        ],
+      ),
     );
   }
 
