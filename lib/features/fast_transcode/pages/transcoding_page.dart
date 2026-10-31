@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
+import 'package:ffmpeg_kit_flutter_new/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +16,7 @@ import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
 import 'package:decant/features/fast_transcode/utils/output_path.dart';
 
 /// 转码状态
-enum TranscodeStatus { running, success, failed }
+enum TranscodeStatus { running, success, failed, cancelled }
 
 /// 转码页面
 class TranscodingPage extends ConsumerStatefulWidget {
@@ -38,6 +39,9 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
   late final String _baseName; // 输出基础名
   List<FfmpegOutput> _outputs = const []; // 产物列表
 
+  FFmpegSession? _session; // 当前转码会话
+  bool _cancelling = false; // 是否已请求取消
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +53,16 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
     // 延迟一帧执行，先让 UI 渲染出 Loading 状态
     Future.microtask(() => _initAndStart());
+  }
+
+  @override
+  void dispose() {
+    // 离开页面时中断仍在跑的转码
+    final session = _session;
+    if (session != null && _status == TranscodeStatus.running) {
+      session.cancel();
+    }
+    super.dispose();
   }
 
   /// 初始化数据并开始转码
@@ -108,43 +122,88 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     _outputs = command.outputs;
     debugPrint('FFmpeg Command: ${command.command}');
 
-    // 监听进度
-    FFmpegKitConfig.enableStatisticsCallback((stats) {
-      final timeMs = stats.getTime();
-      if (_totalDurationMs > 0) {
-        final progress = (timeMs / _totalDurationMs).clamp(0.0, 1.0);
-        if ((progress - _progress).abs() > 0.01) {
-          setState(() => _progress = progress);
+    // 异步执行，拿到会话以便随时中断
+    _session = await FFmpegKit.executeAsync(
+      command.command,
+      _onSessionComplete,
+      null,
+      _onStatistics,
+    );
+
+    // 会话创建前用户已经点了取消
+    if (_cancelling) await _session?.cancel();
+  }
+
+  /// 进度回调
+  void _onStatistics(Statistics stats) {
+    if (!mounted || _status != TranscodeStatus.running) return;
+    if (_totalDurationMs <= 0) return;
+
+    final progress = (stats.getTime() / _totalDurationMs).clamp(0.0, 1.0);
+    if ((progress - _progress).abs() > 0.01) {
+      setState(() => _progress = progress);
+    }
+  }
+
+  /// 转码结束回调
+  void _onSessionComplete(FFmpegSession session) async {
+    try {
+      final returnCode = await session.getReturnCode();
+
+      if (ReturnCode.isCancel(returnCode)) {
+        await _discardOutputs(); // 取消后清掉残片
+        if (!mounted) return;
+        setState(() => _status = TranscodeStatus.cancelled);
+        return;
+      }
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        try {
+          await _commitOutputs(); // 临时文件改名为最终文件
+          if (!mounted) return;
+          setState(() => _status = TranscodeStatus.success);
+        } catch (e) {
+          await _discardOutputs();
+          if (!mounted) return;
+          setState(() {
+            _status = TranscodeStatus.failed;
+            _errorLog = '保存输出文件失败: $e';
+          });
         }
+        return;
       }
-    });
 
-    // 执行命令
-    final session = await FFmpegKit.execute(command.command);
-    final returnCode = await session.getReturnCode();
-
-    // 处理结果
-    if (ReturnCode.isSuccess(returnCode)) {
-      try {
-        await _commitOutputs(); // 临时文件改名为最终文件
-        setState(() => _status = TranscodeStatus.success);
-      } catch (e) {
-        await _discardOutputs();
-        setState(() {
-          _status = TranscodeStatus.failed;
-          _errorLog = '保存输出文件失败: $e';
-        });
-      }
-    } else {
       await _discardOutputs(); // 失败时清掉残片
       final log = await session.getAllLogsAsString();
+      if (!mounted) return;
       setState(() {
         _status = TranscodeStatus.failed;
         _errorLog = log ?? '未知错误';
       });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = TranscodeStatus.failed;
+        _errorLog = '转码中断: $e';
+      });
     }
+  }
 
-    FFmpegKitConfig.enableStatisticsCallback(null);
+  /// 取消转码
+  Future<void> _cancel() async {
+    if (_cancelling) return;
+    setState(() => _cancelling = true);
+    await _session?.cancel();
+  }
+
+  /// 重新转码
+  void _retry() {
+    setState(() {
+      _status = TranscodeStatus.running;
+      _progress = 0.0;
+      _cancelling = false;
+    });
+    _startTranscoding();
   }
 
   /// 把临时文件改名为最终文件
@@ -176,12 +235,14 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
           TranscodeStatus.running => _buildRunning(),
           TranscodeStatus.success => _buildSuccess(),
           TranscodeStatus.failed => _buildFailed(),
+          TranscodeStatus.cancelled => _buildCancelled(),
         },
       ),
     );
   }
 
   Widget _buildRunning() {
+    final percent = (_progress * 100).toStringAsFixed(0);
     return Column(
       key: const ValueKey('running'),
       mainAxisAlignment: .center,
@@ -189,16 +250,19 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
         const CircularProgressIndicator(),
         const SizedBox(height: 24),
         Text(
-          '正在转码... ${(_progress * 100).toStringAsFixed(0)}%',
+          _cancelling ? '正在取消...' : '正在转码... $percent%',
           style: const TextStyle(fontSize: 18),
         ),
         const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: _progress,
-          semanticsLabel: (_progress * 100).toStringAsFixed(0),
-        ),
+        LinearProgressIndicator(value: _progress, semanticsLabel: percent),
         const SizedBox(height: 8),
-        const Text('请勿关闭应用', style: TextStyle(color: Colors.grey)),
+        const Text('喝杯茶，休息一下吧', style: TextStyle(color: Colors.grey)),
+        const SizedBox(height: 32),
+        OutlinedButton.icon(
+          onPressed: _cancelling ? null : _cancel,
+          icon: const Icon(Icons.stop_circle_outlined),
+          label: Text(_cancelling ? '正在取消' : '取消转码'),
+        ),
       ],
     );
   }
@@ -251,6 +315,46 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     );
   }
 
+  Widget _buildCancelled() {
+    final theme = Theme.of(context);
+    return Column(
+      key: const ValueKey('cancelled'),
+      mainAxisAlignment: .center,
+      children: [
+        Icon(Icons.cancel_outlined, size: 80, color: theme.colorScheme.outline),
+        const SizedBox(height: 24),
+        const Text(
+          '已取消转码',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          '未完成的临时文件已清理',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 32),
+        Row(
+          mainAxisAlignment: .center,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => ref.read(fastTranscodeProvider.notifier).reset(),
+              icon: const Icon(Icons.home),
+              label: const Text('返回首页'),
+            ),
+            const SizedBox(width: 16),
+            FilledButton.icon(
+              onPressed: _retry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('重新转码'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildFailed() {
     return Column(
       key: const ValueKey('failed'),
@@ -288,16 +392,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
               child: const Text('返回首页'),
             ),
             const SizedBox(width: 16),
-            FilledButton(
-              onPressed: () {
-                setState(() {
-                  _status = TranscodeStatus.running;
-                  _progress = 0.0;
-                });
-                _startTranscoding(); // 重试
-              },
-              child: const Text('重试'),
-            ),
+            FilledButton(onPressed: _retry, child: const Text('重试')),
           ],
         ),
       ],
