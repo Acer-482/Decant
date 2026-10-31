@@ -176,9 +176,8 @@ class FfmpegArgsBuilder {
     return FfmpegCommand(buffer.toString(), outputs);
   }
 
-  /// 为路径加上引号并转义，避免空格、中文、引号破坏命令
+  /// 为路径加上引号，避免空格、中文破坏命令
   static String _quote(String value) {
-    final escaped = value.replaceAll(r'\', r'\\').replaceAll('"', r'\"');
-    return '"$escaped"';
+    return '"${value.replaceAll('"', r'\"')}"';
   }
 }
