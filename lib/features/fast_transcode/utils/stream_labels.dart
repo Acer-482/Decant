@@ -1,5 +1,6 @@
 import 'package:decant/domain/codec/audio_codec.dart';
 import 'package:decant/domain/codec/video_codec.dart';
+import 'package:decant/domain/media/media_info.dart';
 import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
 import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 import 'package:decant/domain/media/stream_info/video_stream_info.dart';
@@ -37,6 +38,23 @@ String codecInfo(BaseStreamInfo stream) {
   }
 
   return name;
+}
+
+/// 媒体摘要
+String mediaSummary(MediaInfo info) {
+  VideoStreamInfo? video;
+  for (final stream in info.streams) {
+    if (stream is VideoStreamInfo) {
+      video = stream;
+      break;
+    }
+  }
+
+  return [
+    MediaFormatUtils.duration(info.duration),
+    if (video != null) '${video.width}×${video.height}',
+    '${info.streams.length} 条流',
+  ].join(' · ');
 }
 
 /// 编码显示名

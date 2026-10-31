@@ -11,6 +11,8 @@ import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
 import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 import 'package:decant/features/fast_transcode/utils/output_path.dart';
 import 'package:decant/features/fast_transcode/utils/stream_config_factory.dart';
+import 'package:decant/features/fast_transcode/utils/stream_labels.dart';
+import 'package:decant/features/fast_transcode/widgets/source_details_dialog.dart';
 import 'package:decant/features/fast_transcode/widgets/stream_tile.dart';
 import 'package:decant/shared/utils/file_utils.dart';
 import 'package:decant/shared/widgets/path_text.dart';
@@ -36,11 +38,28 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
 
   /// 构建初始配置
   List<_StreamEntry> _buildEntries() {
+    final saved = {
+      for (final config in ref.read(fastTranscodeProvider).streamConfigs)
+        config.mapTarget: config,
+    };
     return [
       for (var i = 0; i < widget.inputs.length; i++)
         for (final stream in widget.inputs[i].info.streams)
-          _StreamEntry(stream: stream, config: defaultStreamConfig(stream, i)),
+          _buildEntry(stream, i, saved),
     ];
+  }
+
+  /// 单条流的初始配置
+  _StreamEntry _buildEntry(
+    BaseStreamInfo stream,
+    int inputIndex,
+    Map<String, StreamConfig> saved,
+  ) {
+    final fallback = defaultStreamConfig(stream, inputIndex);
+    return _StreamEntry(
+      stream: stream,
+      config: saved[fallback.mapTarget] ?? fallback,
+    );
   }
 
   /// 更新配置
@@ -173,7 +192,7 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
         crossAxisAlignment: .stretch,
         children: [
           for (var input = 0; input < widget.inputs.length; input++) ...[
-            if (widget.inputs.length > 1) _buildInputHeader(input),
+            _buildInputRow(input),
             for (var i = 0; i < _entries.length; i++)
               if (_entries[i].config.inputIndex == input)
                 _buildStreamTile(i, outputDir, baseName),
@@ -329,27 +348,68 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     );
   }
 
-  /// 输入分组标题
-  Widget _buildInputHeader(int index) {
+  /// 输入行
+  Widget _buildInputRow(int index) {
     final theme = Theme.of(context);
+    final input = widget.inputs[index];
+
     return Padding(
       padding: const EdgeInsets.only(top: 12, bottom: 4),
-      child: Row(
-        children: [
-          Icon(Icons.input, size: 13, color: theme.colorScheme.primary),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              '输入 ${index + 1} · ${_inputLabel(index)}',
-              maxLines: 1,
-              overflow: .ellipsis,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+      child: InkWell(
+        onTap: () => showSourceDetailsDialog(
+          context,
+          source: input.source,
+          info: input.info,
+        ),
+        borderRadius: .circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: .circular(10),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(
+                Icons.input,
+                size: 18,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisSize: .min,
+                  crossAxisAlignment: .start,
+                  spacing: 2,
+                  children: [
+                    Text(
+                      '输入 ${index + 1} · ${_inputLabel(index)}',
+                      maxLines: 1,
+                      overflow: .ellipsis,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      mediaSummary(input.info),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '详情',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

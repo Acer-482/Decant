@@ -56,6 +56,13 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
     state = state.copyWith(step: .configureTranscodeOptions);
   }
 
+  /// 返回配置步骤
+  ///
+  /// 保留已填的流配置
+  void backToConfigOptions() {
+    state = state.copyWith(step: .configureTranscodeOptions);
+  }
+
   /// 开始转码
   void startTranscoding(List<StreamConfig> configs) {
     state = state.copyWith(step: .transcoding, streamConfigs: configs);

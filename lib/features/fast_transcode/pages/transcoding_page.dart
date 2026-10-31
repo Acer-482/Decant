@@ -196,6 +196,16 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     await _session?.cancel();
   }
 
+  /// 返回转码设置
+  void _backToOptions() {
+    ref.read(fastTranscodeProvider.notifier).backToConfigOptions();
+  }
+
+  /// 返回首页
+  void _reset() {
+    ref.read(fastTranscodeProvider.notifier).reset();
+  }
+
   /// 重新转码
   void _retry() {
     setState(() {
@@ -302,10 +312,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
             ),
             const SizedBox(width: 16),
             FilledButton.icon(
-              onPressed: () {
-                // 重置状态机回到第一步
-                ref.read(fastTranscodeProvider.notifier).reset();
-              },
+              onPressed: _reset, // 重置状态机回到第一步
               icon: const Icon(Icons.home),
               label: const Text('返回首页'),
             ),
@@ -339,9 +346,9 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
           mainAxisAlignment: .center,
           children: [
             OutlinedButton.icon(
-              onPressed: () => ref.read(fastTranscodeProvider.notifier).reset(),
-              icon: const Icon(Icons.home),
-              label: const Text('返回首页'),
+              onPressed: _backToOptions,
+              icon: const Icon(Icons.tune),
+              label: const Text('返回设置'),
             ),
             const SizedBox(width: 16),
             FilledButton.icon(
@@ -351,6 +358,8 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        TextButton(onPressed: _reset, child: const Text('返回首页')),
       ],
     );
   }
@@ -387,14 +396,21 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
         Row(
           mainAxisAlignment: .center,
           children: [
-            OutlinedButton(
-              onPressed: () => ref.read(fastTranscodeProvider.notifier).reset(),
-              child: const Text('返回首页'),
+            OutlinedButton.icon(
+              onPressed: _backToOptions,
+              icon: const Icon(Icons.tune),
+              label: const Text('返回设置'),
             ),
             const SizedBox(width: 16),
-            FilledButton(onPressed: _retry, child: const Text('重试')),
+            FilledButton.icon(
+              onPressed: _retry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('重试'),
+            ),
           ],
         ),
+        const SizedBox(height: 8),
+        TextButton(onPressed: _reset, child: const Text('返回首页')),
       ],
     );
   }

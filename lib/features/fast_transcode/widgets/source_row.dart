@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:decant/domain/media/media_info.dart';
-import 'package:decant/domain/media/stream_info/video_stream_info.dart';
 import 'package:decant/domain/source/base_source.dart';
 import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
-import 'package:decant/features/fast_transcode/widgets/file_info_card.dart';
-import 'package:decant/features/fast_transcode/widgets/media_info_card.dart';
+import 'package:decant/features/fast_transcode/utils/stream_labels.dart';
+import 'package:decant/features/fast_transcode/widgets/source_details_dialog.dart';
 import 'package:decant/shared/utils/file_utils.dart';
-import 'package:decant/shared/utils/media_format_utils.dart';
 
 /// 文件行
 class SourceRow extends ConsumerStatefulWidget {
@@ -146,31 +144,11 @@ class _SourceRowState extends ConsumerState<SourceRow>
 
   /// 查看详情
   void _showDetails(AsyncValue<MediaInfo> info) {
-    final source = widget.source;
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(source is FileSource ? _name : '未知源信息'),
-        content: SizedBox(
-          width: 480,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: .min,
-              spacing: 8,
-              children: [
-                if (source is FileSource) FileInfoCard(path: source.path),
-                if (info.hasValue) MediaInfoCard(info: info.requireValue),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('关闭'),
-          ),
-        ],
-      ),
+    showSourceDetailsDialog(
+      context,
+      source: widget.source,
+      info: info.value,
+      error: info.hasError ? '${info.error}' : null,
     );
   }
 
@@ -178,21 +156,6 @@ class _SourceRowState extends ConsumerState<SourceRow>
   String _summary(AsyncValue<MediaInfo> info) {
     if (info.isLoading) return '解析中…';
     if (!info.hasValue) return '解析失败，点击右侧详情查看原因';
-
-    final media = info.requireValue;
-    VideoStreamInfo? video;
-    for (final stream in media.streams) {
-      if (stream is VideoStreamInfo) {
-        video = stream;
-        break;
-      }
-    }
-
-    final parts = <String>[
-      MediaFormatUtils.duration(media.duration),
-      if (video != null) '${video.width}×${video.height}',
-      '${media.streams.length} 条流',
-    ];
-    return parts.join(' · ');
+    return mediaSummary(info.requireValue);
   }
 }
