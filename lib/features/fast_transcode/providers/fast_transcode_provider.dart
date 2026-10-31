@@ -41,6 +41,11 @@ class FastTranscodeNotifier extends Notifier<FastTranscodeState> {
     state = state.copyWith(outputDir: dir);
   }
 
+  /// 设置主输出文件名
+  void setOutputName(String? name) {
+    state = state.copyWith(outputName: name);
+  }
+
   /// 重置
   void reset() {
     state = const FastTranscodeState(); // 回到第一步

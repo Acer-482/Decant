@@ -76,7 +76,8 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
   /// 执行转码
   Future<void> _startTranscoding() async {
-    final configs = ref.read(fastTranscodeProvider).streamConfigs; // 流配置
+    final state = ref.read(fastTranscodeProvider);
+    final configs = state.streamConfigs; // 流配置
 
     if (!configs.any((config) => config.enabled)) {
       setState(() {
@@ -91,6 +92,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
       configs: configs,
       outputDir: _outputDir,
       baseName: _baseName,
+      outputName: state.outputName,
     );
 
     if (command.outputs.isEmpty) {

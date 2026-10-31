@@ -4,6 +4,7 @@ import 'package:decant/domain/media/stream_config/stream_config.dart';
 import 'package:decant/domain/media/stream_config/unknown_stream_config.dart';
 import 'package:decant/domain/media/stream_config/video_stream_config.dart';
 import 'package:decant/domain/source/base_source.dart';
+import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 
 /// 一个输出文件
 class FfmpegOutput {
@@ -74,13 +75,30 @@ class FfmpegArgsBuilder {
     final custom = config.outputPath;
     if (custom != null && custom.isNotEmpty) return custom;
 
-    if (config is VideoStreamConfig) {
-      return p.join(outputDir, '${baseName}_video.mp4');
+    final extension = extensionFor([config]);
+    final suffix = switch (config) {
+      VideoStreamConfig() => 'video',
+      AudioStreamConfig() => 'audio',
+      _ => 'stream${config.streamIndex}',
+    };
+
+    return p.join(outputDir, '${baseName}_$suffix.$extension');
+  }
+
+  /// 主输出的路径
+  static String mainPath({
+    required List<StreamConfig> configs,
+    required String outputDir,
+    required String baseName,
+    String? outputName,
+  }) {
+    final extension = extensionFor(configs);
+
+    if (outputName != null && outputName.isNotEmpty) {
+      return p.join(outputDir, ensureExtension(outputName, extension));
     }
-    if (config is AudioStreamConfig) {
-      return p.join(outputDir, '${baseName}_audio.${_audioExtension(config)}');
-    }
-    return p.join(outputDir, '${baseName}_stream${config.streamIndex}.mkv');
+
+    return p.join(outputDir, '$baseName.$extension');
   }
 
   /// 组装完整的 FFmpeg 命令
@@ -92,6 +110,7 @@ class FfmpegArgsBuilder {
     required List<StreamConfig> configs,
     required String outputDir,
     required String baseName,
+    String? outputName,
   }) {
     final enabled = configs.where((config) => config.enabled).toList();
 
@@ -123,22 +142,20 @@ class FfmpegArgsBuilder {
       outputs.add(FfmpegOutput(path, main: outputs.isEmpty));
     }
 
-    addOutput(mainConfigs, p.join(outputDir, '$baseName.mp4'));
+    addOutput(
+      mainConfigs,
+      mainPath(
+        configs: mainConfigs,
+        outputDir: outputDir,
+        baseName: baseName,
+        outputName: outputName,
+      ),
+    );
     for (final entry in groups.entries) {
       addOutput(entry.value, entry.key);
     }
 
     return FfmpegCommand(buffer.toString(), outputs);
-  }
-
-  /// 音频单独输出时的扩展名
-  static String _audioExtension(AudioStreamConfig config) {
-    if (!config.copyMode) {
-      final name = config.encoder.ffmpegName;
-      if (name == 'libmp3lame') return 'mp3';
-      if (name == 'flac') return 'flac';
-    }
-    return 'm4a'; // aac 及复制流
   }
 
   /// 为路径加上引号并转义，避免空格、中文、引号破坏命令

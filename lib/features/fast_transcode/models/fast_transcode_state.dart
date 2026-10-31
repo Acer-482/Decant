@@ -22,11 +22,17 @@ class FastTranscodeState with FastTranscodeStateMappable {
   /// 为空时使用第一个源所在目录
   final String? outputDir;
 
+  /// 主输出文件名
+  ///
+  /// 为空时按编码推导的默认名
+  final String? outputName;
+
   const FastTranscodeState({
     this.step = .selectFile,
     this.sources = const [],
     this.streamConfigs = const [],
     this.outputDir,
+    this.outputName,
   });
 
   /// 是否至少有一个输入源

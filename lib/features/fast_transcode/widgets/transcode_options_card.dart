@@ -8,6 +8,7 @@ import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 import 'package:decant/domain/source/file_source.dart';
 import 'package:decant/features/fast_transcode/providers/fast_transcode_provider.dart';
 import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
+import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 import 'package:decant/features/fast_transcode/utils/output_path.dart';
 import 'package:decant/features/fast_transcode/utils/stream_config_factory.dart';
 import 'package:decant/features/fast_transcode/widgets/stream_tile.dart';
@@ -79,6 +80,59 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     _updateConfig(index, config.copyWith(outputPath: location.path));
   }
 
+  /// 重命名主输出文件
+  Future<void> _renameOutput(List<StreamConfig> mainConfigs) async {
+    final sources = [for (final input in widget.inputs) input.source];
+    final state = ref.read(fastTranscodeProvider);
+    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final baseName = defaultBaseName(sources);
+    final extension = extensionFor(mainConfigs);
+
+    final current = p.basename(
+      FfmpegArgsBuilder.mainPath(
+        configs: mainConfigs,
+        outputDir: outputDir,
+        baseName: baseName,
+        outputName: state.outputName,
+      ),
+    );
+
+    final controller = TextEditingController(text: current);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('输出文件名'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: '文件名',
+            helperText: '不写后缀时自动补 .$extension',
+          ),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (result == null) return; // 取消
+    final name = result.trim();
+    if (name.isEmpty) return;
+    ref
+        .read(fastTranscodeProvider.notifier)
+        .setOutputName(ensureExtension(name, extension));
+  }
+
   /// 输入显示名
   String _inputLabel(int index) {
     final source = widget.inputs[index].source;
@@ -94,6 +148,23 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     final outputDir = state.outputDir ?? defaultOutputDir(sources);
     final baseName = defaultBaseName(sources);
     final hasEnabled = _entries.any((entry) => entry.config.enabled);
+
+    // 主输出对应的流
+    final mainConfigs = _entries
+        .where((entry) => entry.config.enabled && !entry.config.separateOutput)
+        .map((entry) => entry.config)
+        .toList();
+    final mainName = mainConfigs.isEmpty
+        ? ''
+        : p.basename(
+            FfmpegArgsBuilder.mainPath(
+              configs: mainConfigs,
+              outputDir: outputDir,
+              baseName: baseName,
+              outputName: state.outputName,
+            ),
+          );
+    final customName = state.outputName != null && state.outputName!.isNotEmpty;
 
     return TitleCard(
       icon: const Icon(Icons.movie),
@@ -116,13 +187,17 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
           ),
           const SizedBox(height: 6),
           _buildOutputDirRow(theme, outputDir),
-          const SizedBox(height: 6),
-          Text(
-            '主文件 $baseName.mp4',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.outline,
+          if (mainConfigs.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            _buildOutputNameRow(
+              theme,
+              mainName,
+              custom: customName,
+              onTap: () => _renameOutput(mainConfigs),
+              onReset: () =>
+                  ref.read(fastTranscodeProvider.notifier).setOutputName(null),
             ),
-          ),
+          ],
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: hasEnabled
@@ -193,6 +268,57 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
             const SizedBox(width: 8),
             Text(
               '更改',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 输出文件名
+  Widget _buildOutputNameRow(
+    ThemeData theme,
+    String name, {
+    required bool custom,
+    required VoidCallback onTap,
+    required VoidCallback onReset,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: .circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: .circular(10),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.description_outlined,
+              size: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: PathText(name, style: theme.textTheme.bodySmall)),
+            if (custom)
+              InkWell(
+                onTap: onReset,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    Icons.restart_alt,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 4),
+            Text(
+              '重命名',
               style: theme.textTheme.labelMedium?.copyWith(
                 color: theme.colorScheme.primary,
               ),
