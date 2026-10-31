@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
@@ -123,8 +125,18 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
     // 处理结果
     if (ReturnCode.isSuccess(returnCode)) {
-      setState(() => _status = TranscodeStatus.success);
+      try {
+        await _commitOutputs(); // 临时文件改名为最终文件
+        setState(() => _status = TranscodeStatus.success);
+      } catch (e) {
+        await _discardOutputs();
+        setState(() {
+          _status = TranscodeStatus.failed;
+          _errorLog = '保存输出文件失败: $e';
+        });
+      }
     } else {
+      await _discardOutputs(); // 失败时清掉残片
       final log = await session.getAllLogsAsString();
       setState(() {
         _status = TranscodeStatus.failed;
@@ -133,6 +145,26 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
     }
 
     FFmpegKitConfig.enableStatisticsCallback(null);
+  }
+
+  /// 把临时文件改名为最终文件
+  Future<void> _commitOutputs() async {
+    for (final output in _outputs) {
+      final temp = File(output.tempPath);
+      if (!await temp.exists()) continue;
+
+      final target = File(output.path);
+      if (await target.exists()) await target.delete();
+      await temp.rename(output.path);
+    }
+  }
+
+  /// 删除临时文件
+  Future<void> _discardOutputs() async {
+    for (final output in _outputs) {
+      final temp = File(output.tempPath);
+      if (await temp.exists()) await temp.delete();
+    }
   }
 
   @override

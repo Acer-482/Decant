@@ -8,13 +8,16 @@ import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 
 /// 一个输出文件
 class FfmpegOutput {
-  /// 文件路径
+  /// 最终路径
   final String path;
+
+  /// 写入/临时 路径
+  final String tempPath;
 
   /// 是否为主输出
   final bool main;
 
-  const FfmpegOutput(this.path, {this.main = false});
+  const FfmpegOutput(this.path, {required this.tempPath, this.main = false});
 }
 
 /// 一条完整的 FFmpeg 命令
@@ -34,10 +37,13 @@ class FfmpegArgsBuilder {
 
   /// 把流配置翻译成 `-map` / `-c:*` 参数
   ///
-  /// 每条启用的配置自带 `输入序号:流序号`，因此多路输入不需要调用方
-  /// 维护"配置列表与流列表顺序对齐"这条隐含约定。
+  /// 同一个输出里有两路同类型流时，后写的会覆盖前面的
   static List<String> build(List<StreamConfig> configs) {
     final args = <String>[];
+
+    var videoCount = 0; // 该输出里的第几条视频流
+    var audioCount = 0; // 该输出里的第几条音频流
+    var streamCount = 0; // 该输出里的第几条流
 
     for (final config in configs) {
       if (!config.enabled) continue; // 禁用的流不产生任何参数
@@ -47,18 +53,22 @@ class FfmpegArgsBuilder {
       switch (config) {
         case final VideoStreamConfig video:
           args.addAll([
-            '-c:v',
+            '-c:v:$videoCount',
             video.copyMode ? 'copy' : video.encoder.ffmpegName,
           ]);
+          videoCount++;
         case final AudioStreamConfig audio:
           args.addAll([
-            '-c:a',
+            '-c:a:$audioCount',
             audio.copyMode ? 'copy' : audio.encoder.ffmpegName,
           ]);
+          audioCount++;
         case final UnknownStreamConfig unknown:
-          // 未知流没有区分 v/a/s，只能整体 copy
-          if (unknown.copyMode) args.addAll(['-c', 'copy']);
+          // 未知流没有区分 v/a/s，只能按流序号整体 copy
+          if (unknown.copyMode) args.addAll(['-c:$streamCount', 'copy']);
       }
+
+      streamCount++;
     }
 
     return args;
@@ -101,10 +111,15 @@ class FfmpegArgsBuilder {
     return p.join(outputDir, '$baseName.$extension');
   }
 
-  /// 组装完整的 FFmpeg 命令
-  ///
-  /// 勾选「单独输出」的流按最终路径分组：路径相同的流会写进同一个文件，
-  /// 路径不同的各写各的，一条命令里用多个 `-map ... <path>` 完成。
+  /// 先写临时文件，避免失败时留下一个"看起来正常"的残片
+  static String tempPathFor(String path) {
+    final dir = p.dirname(path);
+    final name = p.basenameWithoutExtension(path);
+    final extension = p.extension(path);
+    return p.join(dir, '$name.part$extension');
+  }
+
+  /// 组装 FFmpeg 命令
   static FfmpegCommand buildCommand({
     required List<BaseSource> sources,
     required List<StreamConfig> configs,
@@ -138,8 +153,11 @@ class FfmpegArgsBuilder {
     void addOutput(List<StreamConfig> group, String path) {
       if (group.isEmpty) return;
 
-      buffer.write(' ${build(group).join(' ')} ${_quote(path)}');
-      outputs.add(FfmpegOutput(path, main: outputs.isEmpty));
+      final tempPath = tempPathFor(path);
+      buffer.write(' ${build(group).join(' ')} ${_quote(tempPath)}');
+      outputs.add(
+        FfmpegOutput(path, tempPath: tempPath, main: outputs.isEmpty),
+      );
     }
 
     addOutput(
