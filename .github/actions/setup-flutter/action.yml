@@ -1,0 +1,28 @@
+name: Setup Flutter
+description: Install the pinned Flutter SDK, fetch packages and regenerate the dart_mappable code
+
+runs:
+  using: composite
+  steps:
+    - name: Install Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.47.7'
+        cache: true
+
+    # pubspec.lock 里记录的是国内镜像，CI 在海外，改回 pub.dev 再拉包
+    # 用 -i.bak 而不是 -i：macOS 上的 BSD sed 需要后缀参数
+    - name: Point the lock file at pub.dev
+      shell: bash
+      run: |
+        sed -i.bak 's#https://pub.flutter-io.cn#https://pub.dev#g' pubspec.lock
+        rm -f pubspec.lock.bak
+
+    - name: Fetch packages
+      shell: bash
+      run: flutter pub get
+
+    # *.mapper.dart 被 .gitignore 排除，干净检出后必须先生成
+    - name: Generate mappers
+      shell: bash
+      run: dart run build_runner build --delete-conflicting-outputs
