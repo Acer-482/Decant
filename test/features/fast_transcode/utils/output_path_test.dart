@@ -23,4 +23,35 @@ void main() {
     expect(defaultOutputDir(single), 'media');
     expect(defaultBaseName(single), 'movie');
   });
+
+  group('resolveOutputDir', () {
+    test('本次会话选的目录优先级最高', () {
+      expect(
+        resolveOutputDir(
+          sources,
+          sessionDir: p.join('session'),
+          configuredDir: p.join('configured'),
+        ),
+        p.join('session'),
+      );
+    });
+
+    test('没有会话目录时用设置里的默认目录', () {
+      expect(
+        resolveOutputDir(sources, configuredDir: p.join('configured')),
+        p.join('configured'),
+      );
+    });
+
+    test('两者都为空时跟随源文件目录', () {
+      expect(resolveOutputDir(sources), 'media');
+    });
+
+    test('空字符串视为未设置', () {
+      expect(
+        resolveOutputDir(sources, sessionDir: '', configuredDir: ''),
+        'media',
+      );
+    });
+  });
 }
