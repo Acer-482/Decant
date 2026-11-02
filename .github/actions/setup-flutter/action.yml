@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
 name: Setup Flutter
 description: Install the pinned Flutter SDK, fetch packages and regenerate the dart_mappable code
 
@@ -22,7 +23,7 @@ runs:
       shell: bash
       run: flutter pub get
 
-    # *.mapper.dart 被 .gitignore 排除，干净检出后必须先生成
+    # 生成 *.mapper.dart
     - name: Generate mappers
       shell: bash
       run: dart run build_runner build --delete-conflicting-outputs
