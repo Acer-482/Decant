@@ -8,7 +8,7 @@ import 'package:decant/domain/media/stream_info/audio_stream_info.dart';
 import 'package:decant/domain/media/stream_info/base_stream_info.dart';
 import 'package:decant/domain/media/stream_info/video_stream_info.dart';
 import 'package:decant/features/fast_transcode/utils/stream_labels.dart';
-import 'package:decant/features/fast_transcode/widgets/switch_row.dart';
+import 'package:decant/shared/widgets/switch_row.dart';
 import 'package:decant/shared/widgets/path_text.dart';
 
 /// 单条流的设置面板
