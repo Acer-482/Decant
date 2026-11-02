@@ -14,6 +14,7 @@ import 'package:decant/features/fast_transcode/providers/fast_transcode_provider
 import 'package:decant/features/fast_transcode/providers/media_info_provider.dart';
 import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
 import 'package:decant/features/fast_transcode/utils/output_path.dart';
+import 'package:decant/features/settings/providers/transcode_preferences.dart';
 
 /// 转码状态
 enum TranscodeStatus { running, success, failed, cancelled }
@@ -48,7 +49,11 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
 
     // 与配置页保持一致
     final state = ref.read(fastTranscodeProvider);
-    _outputDir = state.outputDir ?? defaultOutputDir(widget.sources);
+    _outputDir = resolveOutputDir(
+      widget.sources,
+      sessionDir: state.outputDir,
+      configuredDir: ref.read(transcodeConfigProvider).defaultOutputDir,
+    );
     _baseName = defaultBaseName(widget.sources);
 
     // 延迟一帧执行，先让 UI 渲染出 Loading 状态
@@ -160,6 +165,9 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
       if (ReturnCode.isSuccess(returnCode)) {
         try {
           await _commitOutputs(); // 临时文件改名为最终文件
+          if (ref.read(transcodeConfigProvider).autoOpenOutput) {
+            _openOutputDir(); // 按设置自动打开目录
+          }
           if (!mounted) return;
           setState(() => _status = TranscodeStatus.success);
         } catch (e) {
@@ -214,6 +222,13 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
       _cancelling = false;
     });
     _startTranscoding();
+  }
+
+  /// 打开输出目录
+  Future<void> _openOutputDir() async {
+    final uri = Uri.file(_outputDir);
+    if (!await canLaunchUrl(uri)) return;
+    await launchUrl(uri);
   }
 
   /// 把临时文件改名为最终文件
@@ -303,10 +318,7 @@ class _TranscodingPageState extends ConsumerState<TranscodingPage> {
           mainAxisAlignment: .center,
           children: [
             OutlinedButton.icon(
-              onPressed: () async {
-                final uri = Uri.file(_outputDir);
-                if (await canLaunchUrl(uri)) await launchUrl(uri);
-              },
+              onPressed: _openOutputDir,
               icon: const Icon(Icons.folder_open),
               label: const Text('打开文件夹'),
             ),

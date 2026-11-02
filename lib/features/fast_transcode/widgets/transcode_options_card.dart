@@ -10,6 +10,7 @@ import 'package:decant/features/fast_transcode/providers/fast_transcode_provider
 import 'package:decant/features/fast_transcode/utils/ffmpeg_args_builder.dart';
 import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 import 'package:decant/features/fast_transcode/utils/output_path.dart';
+import 'package:decant/features/settings/providers/transcode_preferences.dart';
 import 'package:decant/features/fast_transcode/utils/stream_config_factory.dart';
 import 'package:decant/features/fast_transcode/utils/stream_labels.dart';
 import 'package:decant/features/fast_transcode/widgets/source_details_dialog.dart';
@@ -83,7 +84,11 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
   Future<void> _pickStreamOutput(int index, StreamConfig config) async {
     final sources = [for (final input in widget.inputs) input.source];
     final state = ref.read(fastTranscodeProvider);
-    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final outputDir = resolveOutputDir(
+      sources,
+      sessionDir: state.outputDir,
+      configuredDir: ref.read(transcodeConfigProvider).defaultOutputDir,
+    );
     final baseName = defaultBaseName(sources);
 
     final suggested = FfmpegArgsBuilder.outputPathFor(
@@ -103,7 +108,11 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
   Future<void> _renameOutput(List<StreamConfig> mainConfigs) async {
     final sources = [for (final input in widget.inputs) input.source];
     final state = ref.read(fastTranscodeProvider);
-    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final outputDir = resolveOutputDir(
+      sources,
+      sessionDir: state.outputDir,
+      configuredDir: ref.read(transcodeConfigProvider).defaultOutputDir,
+    );
     final baseName = defaultBaseName(sources);
     final extension = extensionFor(mainConfigs);
 
@@ -164,7 +173,11 @@ class _TranscodeOptionsCardState extends ConsumerState<TranscodeOptionsCard> {
     final theme = Theme.of(context);
     final sources = [for (final input in widget.inputs) input.source];
     final state = ref.watch(fastTranscodeProvider);
-    final outputDir = state.outputDir ?? defaultOutputDir(sources);
+    final outputDir = resolveOutputDir(
+      sources,
+      sessionDir: state.outputDir,
+      configuredDir: ref.read(transcodeConfigProvider).defaultOutputDir,
+    );
     final baseName = defaultBaseName(sources);
     final hasEnabled = _entries.any((entry) => entry.config.enabled);
 
