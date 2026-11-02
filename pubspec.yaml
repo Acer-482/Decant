@@ -22,6 +22,9 @@ dependencies:
   desktop_drop: ^0.8.4 # 文件拖拽
   url_launcher: ^6.3.3 # URL 跳转/启动
 
+  # 首选项
+  shared_preferences: ^2.5.5 # 本地配置存储
+
   # 状态管理
   provider: ^6.1.5+1 # Provider
   flutter_riverpod: ^3.4.3 # Riverpod
