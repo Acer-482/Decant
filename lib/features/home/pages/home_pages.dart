@@ -2,6 +2,7 @@ import 'package:decant/features/task_list/pages/task_list_page.dart';
 import 'package:decant/features/welcome/pages/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:decant/features/fast_transcode/pages/fast_transcode_page.dart';
+import 'package:decant/features/settings/pages/settings_page.dart';
 
 /// 导航项
 class _NavigationItem {
@@ -49,6 +50,7 @@ class _HomePageState extends State<HomePage> {
       icon: const Icon(Icons.settings_outlined),
       description: '配置首选项',
       name: '设置',
+      page: const SettingsPage(),
     ),
   ]; // 导航项
 
