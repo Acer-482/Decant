@@ -111,6 +111,10 @@ Preferences sit beside it rather than inside it: the pipeline stays pure, and th
 - [ ] A "prefer hardware encoding" default
 - [ ] Installers and code signing
 
+## Contributing
+
+Setup, formatting, testing and commit conventions live in [CONTRIBUTING.md](CONTRIBUTING.md). The documentation index is [docs/README.md](docs/README.md).
+
 ## License
 
 [GPL-3.0](LICENSE).

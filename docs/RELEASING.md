@@ -1,5 +1,7 @@
 # Releasing
 
+> Related: [README](../README.md) · [Contributing](../CONTRIBUTING.md) · [Documentation index](README.md)
+
 Releases are built by [`.github/workflows/release.yml`](../.github/workflows/release.yml) and triggered by tags that start with `v`.
 
 ## Versioning
