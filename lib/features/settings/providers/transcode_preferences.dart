@@ -20,9 +20,8 @@ final transcodeConfigProvider = Provider<TranscodeConfig>(
 );
 
 /// 转码首选项通知器
-class TranscodePreferencesNotifier extends BasePreferencesNotifier<
-    TranscodeConfig
-> {
+class TranscodePreferencesNotifier
+    extends BasePreferencesNotifier<TranscodeConfig> {
   static const String _keyDefaultOutputDir = 'defaultOutputDir'; // 默认输出目录
   static const String _keyAutoOpenOutput = 'autoOpenOutput'; // 自动打开输出目录
 

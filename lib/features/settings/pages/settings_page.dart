@@ -262,10 +262,7 @@ class _AboutSection extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Row(
           spacing: 8,
-          children: [
-            Icon(Icons.wine_bar_rounded),
-            Text(AppInfo.name),
-          ],
+          children: [Icon(Icons.wine_bar_rounded), Text(AppInfo.name)],
         ),
         content: Column(
           mainAxisSize: .min,
@@ -319,8 +316,7 @@ class _AboutSection extends ConsumerWidget {
     ref.invalidate(themePreferencesProvider);
     ref.invalidate(transcodePreferencesProvider);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('已恢复默认设置')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('已恢复默认设置')));
   }
 }

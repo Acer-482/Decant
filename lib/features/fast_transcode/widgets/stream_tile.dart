@@ -160,10 +160,7 @@ class StreamTile extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: PathText(
-                  outputPath,
-                  style: theme.textTheme.bodySmall,
-                ),
+                child: PathText(outputPath, style: theme.textTheme.bodySmall),
               ),
               if (customPath)
                 InkWell(

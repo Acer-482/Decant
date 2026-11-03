@@ -38,13 +38,15 @@ void main() {
     });
 
     test('HEVC 选 libx265', () {
-      final config = defaultStreamConfig(_video('hevc'), 0) as VideoStreamConfig;
+      final config =
+          defaultStreamConfig(_video('hevc'), 0) as VideoStreamConfig;
 
       expect(config.encoder, VideoEncoder.libx265);
     });
 
     test('不认识的编码兜底 libx264', () {
-      final config = defaultStreamConfig(_video('weird'), 0) as VideoStreamConfig;
+      final config =
+          defaultStreamConfig(_video('weird'), 0) as VideoStreamConfig;
 
       expect(config.encoder, VideoEncoder.libx264);
     });
@@ -67,7 +69,8 @@ void main() {
     });
 
     test('不认识的编码兜底 aac', () {
-      final config = defaultStreamConfig(_audio('weird'), 0) as AudioStreamConfig;
+      final config =
+          defaultStreamConfig(_audio('weird'), 0) as AudioStreamConfig;
 
       expect(config.encoder, AudioEncoder.aac);
     });

@@ -34,8 +34,5 @@ StreamConfig defaultStreamConfig(BaseStreamInfo stream, int inputIndex) {
     );
   }
 
-  return UnknownStreamConfig(
-    inputIndex: inputIndex,
-    streamIndex: stream.index,
-  );
+  return UnknownStreamConfig(inputIndex: inputIndex, streamIndex: stream.index);
 }

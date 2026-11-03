@@ -16,7 +16,10 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    expect(await container.read(themePreferencesProvider.future), ThemeConfig.defaults);
+    expect(
+      await container.read(themePreferencesProvider.future),
+      ThemeConfig.defaults,
+    );
     expect(container.read(themeConfigProvider), ThemeConfig.defaults);
   });
 
@@ -30,7 +33,10 @@ void main() {
     await notifier.setSeedColor(Colors.orange);
 
     expect(container.read(themeConfigProvider).mode, ThemeModeOption.light);
-    expect(container.read(themeConfigProvider).seedColor.toARGB32(), Colors.orange.toARGB32());
+    expect(
+      container.read(themeConfigProvider).seedColor.toARGB32(),
+      Colors.orange.toARGB32(),
+    );
 
     // 新容器相当于重启应用
     final restarted = ProviderContainer();

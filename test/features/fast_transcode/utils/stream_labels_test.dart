@@ -28,7 +28,11 @@ void main() {
     expect(streamTitle(_audio), '音频流 #1');
     expect(
       streamTitle(
-        const UnknownStreamInfo(index: 2, codecName: 'pgs', codecType: 'subtitle'),
+        const UnknownStreamInfo(
+          index: 2,
+          codecName: 'pgs',
+          codecType: 'subtitle',
+        ),
       ),
       '未知流 #2',
     );

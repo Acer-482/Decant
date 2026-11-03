@@ -15,7 +15,10 @@ void main() {
     expect(await service.getString('str', 'fallback'), 'fallback');
     expect(await service.getBool('bool', true), isTrue);
     expect(await service.getInt('int', 7), 7);
-    expect((await service.getColor('color', Colors.cyan)).toARGB32(), Colors.cyan.toARGB32());
+    expect(
+      (await service.getColor('color', Colors.cyan)).toARGB32(),
+      Colors.cyan.toARGB32(),
+    );
     expect(
       await service.getEnum(
         'enum',
@@ -38,7 +41,10 @@ void main() {
     expect(await service.getString('str', ''), 'value');
     expect(await service.getBool('bool', true), isFalse);
     expect(await service.getInt('int', 0), 3);
-    expect((await service.getColor('color', Colors.cyan)).toARGB32(), Colors.orange.toARGB32());
+    expect(
+      (await service.getColor('color', Colors.cyan)).toARGB32(),
+      Colors.orange.toARGB32(),
+    );
     expect(
       await service.getEnum(
         'enum',

@@ -5,25 +5,21 @@ import 'package:decant/domain/media/stream_config/audio_stream_config.dart';
 import 'package:decant/domain/media/stream_config/video_stream_config.dart';
 import 'package:decant/features/fast_transcode/utils/output_naming.dart';
 
-VideoStreamConfig _video(
-  VideoEncoder encoder, {
-  bool copy = false,
-}) => VideoStreamConfig(
-  inputIndex: 0,
-  streamIndex: 0,
-  copyMode: copy,
-  encoder: encoder,
-);
+VideoStreamConfig _video(VideoEncoder encoder, {bool copy = false}) =>
+    VideoStreamConfig(
+      inputIndex: 0,
+      streamIndex: 0,
+      copyMode: copy,
+      encoder: encoder,
+    );
 
-AudioStreamConfig _audio(
-  AudioEncoder encoder, {
-  bool copy = false,
-}) => AudioStreamConfig(
-  inputIndex: 0,
-  streamIndex: 1,
-  copyMode: copy,
-  encoder: encoder,
-);
+AudioStreamConfig _audio(AudioEncoder encoder, {bool copy = false}) =>
+    AudioStreamConfig(
+      inputIndex: 0,
+      streamIndex: 1,
+      copyMode: copy,
+      encoder: encoder,
+    );
 
 void main() {
   group('extensionFor 视频', () {
