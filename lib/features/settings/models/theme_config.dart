@@ -9,13 +9,10 @@ class ThemeConfig {
   /// 亮暗模式
   final ThemeModeOption mode;
 
-  const ThemeConfig({required this.seedColor, required this.mode});
+  const ThemeConfig({this.seedColor = Colors.cyan, this.mode = .system});
 
   /// 默认值
-  static const ThemeConfig defaults = ThemeConfig(
-    seedColor: Colors.cyan,
-    mode: ThemeModeOption.dark,
-  );
+  static const ThemeConfig defaults = ThemeConfig();
 
   /// 可选的主题色
   static const List<Color> seedColors = [
