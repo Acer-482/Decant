@@ -11,7 +11,7 @@ class AppInfo {
   /// 版本号
   ///
   /// 与 pubspec.yaml 的 version 保持一致，发版时一起改
-  static const String version = '0.1.0';
+  static const String version = '0.2.0';
 
   /// 许可证
   static const String license = 'GPL-3.0';
